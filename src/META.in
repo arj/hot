@@ -1,0 +1,6 @@
+name = "higherOrderTools"
+version = "@VERSION@"
+description = "A library for higher order model checking."
+requires = "batteries"
+archive(byte) = "higherOrderTools.cma"
+archive(native) = "higherOrderTools.cmxa"

@@ -1,0 +1,139 @@
+open Batteries
+
+exception Path_not_found_in_term
+
+module type S = sig
+  type atype
+
+  type t =
+    | App of t * t list
+    | Ctor of string * atype
+    | Var of string
+    | Bottom
+
+  val string_of : ?sort:bool -> t -> string
+
+  val eta_reduce : t -> t
+  val subst : string -> t -> t -> t
+  val subst_path : HotPath.t -> t -> t -> t
+  val path : t -> string -> HotPath.t option
+  val read : t -> HotPath.t -> t
+  val is_welldefined : t -> bool
+  val depth : t -> int
+
+  module type Infix = sig
+    val (-->) : t -> string -> HotPath.t option
+    val (-.) : t -> HotPath.t -> t
+  end
+end
+
+module Make = functor (ASort : HotTypes.S) -> struct
+  type atype = ASort.t
+  type t =
+    | App of t * t list
+    | Ctor of string * atype
+    | Var of string
+    | Bottom
+
+  let rec string_of ?(sort=false) = function
+    | App(t,[]) -> Printf.sprintf "%s" (string_of ~sort:sort t)
+    | App(t,ts) ->
+        Printf.sprintf "%s(%s)"
+          (string_of ~sort:sort t)
+          (String.concat "," (List.map (string_of ~sort:sort) ts))
+    | Ctor(c,tp) ->
+        if sort then
+          Printf.sprintf "%s:%s" c (ASort.string_of tp)
+        else
+          c
+    | Var(x) -> x
+    | Bottom -> "_|_"
+
+  let rec eta_reduce = function
+    | App(App(Ctor(s,tp), []),ts) -> App(Ctor(s,tp),ts)
+    | App(t1,ts) -> App(eta_reduce t1, List.map eta_reduce ts)
+    | _ as t -> t
+
+  let rec subst x newterm c = match c with
+    | App(t,ts) -> eta_reduce (App(subst x newterm t, List.map (subst x newterm) ts))
+    | Var(y) when x = y -> newterm 
+    | Var(_)
+    | Ctor(_,_)
+    | Bottom -> c
+
+  let rec subst_path path newterm term = match term,path with
+    | Bottom,HotPath.Empty -> newterm
+    | Bottom,_ -> raise Path_not_found_in_term
+    | Var(_),HotPath.Empty -> newterm
+    | Var(_),_ -> raise Path_not_found_in_term
+    | App(Ctor(c,st), ts), HotPath.Ele(d,idx,path') when c = d ->
+        let len = List.length ts in
+          if idx >= len then
+            raise Path_not_found_in_term
+          else
+            begin
+              let ts' = BatList.mapi
+                          (fun i t -> if i = idx then subst_path path' newterm t else t)
+                          ts
+              in
+                App(Ctor(c,st), ts')
+            end
+    | Ctor(_,_), HotPath.Empty -> newterm
+    | App(_,_), HotPath.Empty -> newterm
+    | App(_,_), _
+    | Ctor(_,_), _ -> raise Path_not_found_in_term
+
+
+  let path term var =
+    let rec path_inner path_so_far term : HotPath.t option = match term with
+      | Bottom -> None
+      | App(App(t,_),_) -> path_inner path_so_far t
+      | App(Var(x), _)
+      | Var(x) -> if x = var then Some path_so_far else None
+      | App(Ctor(c,_), ts) ->
+          begin
+            let new_path i = HotPath.Ele(c,i,path_so_far) in
+            let paths = List.mapi (fun i t -> path_inner (new_path i) t) ts in
+            let paths_non_none = List.filter BatOption.is_some paths in
+              match paths_non_none with
+                | [] -> None
+                | x :: _ -> x
+          end
+      | Ctor(_,_) -> None
+      | App(_,_) -> None
+
+    in
+    let res = path_inner HotPath.epsilon term in
+      BatOption.map HotPath.reverse res
+
+
+  let rec read term path = match path with
+    | HotPath.Empty -> term
+    | HotPath.Ele(c,i,p') ->
+        match term with
+          | App(Ctor(ac,_),ts) when c = ac ->
+              begin
+                try
+                  read (List.nth ts i) p'
+                with
+                  | Invalid_argument _ -> raise Path_not_found_in_term
+              end
+          | _ -> raise Path_not_found_in_term
+
+  let is_welldefined term = false
+
+  let rec depth = function
+    | Bottom -> 1
+    | Var(_) -> 1
+    | App(_,ts) ->
+        let depths = List.map depth ts in
+          List.max (0 :: depths) + 1
+    | Ctor(_,_) -> failwith "May not occur"
+
+  module Infix = struct
+    let (-->) = path
+    let (-.) = read
+  end
+end
+
+module SortTerm = Make(HotTypes.Sort)
