@@ -11,6 +11,9 @@ Requirements
 - Autoconf >= 2.69
 - Make
 
+With OPAM:
+`opam install ounit batteries`
+
 Compilation
 ===========
 
