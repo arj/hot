@@ -23,3 +23,12 @@ module Make = functor(S : BatSet.OrderedType) -> struct
 end
 
 module StringSet = Make(String)
+
+module PairSet = functor (S1 : BatSet.OrderedType) ->
+  functor (S2 : BatSet.OrderedType) -> struct
+
+  include Make(struct
+                 type t = S1.t * S2.t
+                 let compare = compare
+               end)
+end

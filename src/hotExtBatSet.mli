@@ -29,4 +29,14 @@ module Make :
       val of_list : elt list -> t
       val as_list : t -> elt list
     end
+
+(** String set. *)
 module StringSet : S with type elt = string
+
+
+(** Set of pairs. *)
+module PairSet : functor (S1 : BatSet.OrderedType) ->
+  functor (S2 : BatSet.OrderedType) -> sig
+
+  include S with type elt = S1.t * S2.t
+end
