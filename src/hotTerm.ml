@@ -35,7 +35,7 @@ module type S = sig
   end
 end
 
-module Make = functor (ASort : HotTypes.S) -> struct
+module Make = functor (ASort : HotType.S) -> struct
   type atype = ASort.t
   type t = 
     | App of t * t list
@@ -165,4 +165,4 @@ module Make = functor (ASort : HotTypes.S) -> struct
   end
 end
 
-module SortTerm = Make(HotTypes.Sort)
+module SortTerm = Make(HotType.Sort)

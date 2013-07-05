@@ -13,6 +13,7 @@ module type S = sig
   val order : t -> int
   val arity : t -> int
   val string_of : t -> string
+  val compare : t -> t -> int
 end
 
 module Make = functor(ABasetype : BASETYPE) -> struct
@@ -36,6 +37,8 @@ module Make = functor(ABasetype : BASETYPE) -> struct
           "(%s -> %s)"
           (string_of t1)
           (string_of t2)
+
+  let compare = compare
 end
 
 module Sort = struct

@@ -26,8 +26,8 @@ SOURCES = \
 		  hotExtBatSet.mli \
 		  hotExtBatSet.ml \
 		  hotInterfaces.mli \
-		  hotTypes.mli \
-		  hotTypes.ml \
+		  hotType.mli \
+		  hotType.ml \
 		  hotPath.mli \
 		  hotPath.ml \
 		  hotTerm.mli \

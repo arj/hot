@@ -109,7 +109,7 @@ module type S = sig
 end
 
 module Make :
-  functor (ASort : HotTypes.S) ->
+  functor (ASort : HotType.S) ->
     sig
       type atype = ASort.t
       type t = private
@@ -140,7 +140,7 @@ module Make :
 
 (** Sort term represents terms with their constructor types beeing sorts. *)
 module SortTerm : sig
-  type atype = HotTypes.Sort.t
+  type atype = HotType.Sort.t
   type t = private
     | App of t * t list
     | Ctor of string * atype

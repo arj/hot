@@ -33,6 +33,9 @@ module type S =
 
     (** Returns a human-readable representation for a simple type. *)
     val string_of : t -> string
+
+    (** Comparing two types. Might just be {! Pervasive.compare}. *)
+    val compare : t -> t -> int
   end
 
 (** Constructor for a new simpletype from a given base type representation. See
@@ -40,22 +43,14 @@ module type S =
 module Make :
   functor (ABasetype : HotInterfaces.PRINTABLE) ->
     sig
-      type base = ABasetype.t
-      type t = Base of base | Arrow of t * t
-      val order : t -> int
-      val arity : t -> int
-      val string_of : t -> string
+      include S with type base = ABasetype.t
     end
 
 (** Predefined simple type called 'sort'. In a sort, the base type simply is a
   string "o". *)
 module Sort :
   sig
-    type base = string
-    type t = Base of base | Arrow of t * t
-    val order : t -> int
-    val arity : t -> int
-    val string_of : t -> string
+    include S with type base = string
 
     (** The basic string "o" used as basis. *)
     val base : t
