@@ -13,3 +13,8 @@ module type PRINTABLE = sig
   val string_of : t -> string
 end
 
+module type ORDEREDPRINTABLE = sig
+  type t
+  include BatSet.OrderedType with type t := t
+  include PRINTABLE with type t := t
+end
