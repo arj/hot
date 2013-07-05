@@ -26,6 +26,7 @@ SOURCES = \
 		  hotExtBatSet.mli \
 		  hotExtBatSet.ml \
 		  hotInterfaces.mli \
+		  hotHelper.ml \
 		  hotType.mli \
 		  hotType.ml \
 		  hotPath.mli \
