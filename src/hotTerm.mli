@@ -15,13 +15,24 @@ module type S = sig
   type atype
 
   (** The type of a term. *)
-  type t =
+  type t = private
     | App of t * t list
     | Ctor of string * atype
     | Var of string
     | Bottom
 
-  (* TODO well-formedness? *)
+  (** Creates an application term
+    and eta reduces the term if possible. *)
+  val mkApp : t -> t list -> t
+
+  (** Creates a constructor term with a type. *)
+  val mkCtor : string -> atype -> t
+
+  (** Creates a variable. *)
+  val mkVar : string -> t
+
+  (** Creates the bottom value. *)
+  val mkBottom : t
 
   (** Returns a human-readable representation of the given term.
     If parameter sort is set to true, then sorts are printed with
@@ -101,11 +112,16 @@ module Make :
   functor (ASort : HotTypes.S) ->
     sig
       type atype = ASort.t
-      type t =
+      type t = private
         | App of t * t list
         | Ctor of string * atype
         | Var of string
         | Bottom
+
+      val mkApp : t -> t list -> t
+      val mkCtor : string -> atype -> t
+      val mkVar : string -> t
+      val mkBottom : t
 
       val string_of : ?sort:bool -> t -> string  
       val eta_reduce : t -> t
@@ -125,11 +141,16 @@ module Make :
 (** Sort term represents terms with their constructor types beeing sorts. *)
 module SortTerm : sig
   type atype = HotTypes.Sort.t
-  type t =
+  type t = private
     | App of t * t list
     | Ctor of string * atype
     | Var of string
     | Bottom
+
+  val mkApp : t -> t list -> t
+  val mkCtor : string -> atype -> t
+  val mkVar : string -> t
+  val mkBottom : t
 
   val string_of : ?sort:bool -> t -> string
   val eta_reduce : t -> t

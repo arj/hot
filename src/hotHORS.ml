@@ -1,3 +1,4 @@
+open Batteries
 open HotTerm.SortTerm
 open HotTerm.SortTerm.Infix
 
@@ -111,8 +112,8 @@ let rec step_all hors = function
         let xsts = List.combine xs ts in
           List.fold_left (fun ack (x,t) -> subst x t ack) t xsts
       end
-  | App(Ctor(s,tp),ts) -> App(Ctor(s,tp),List.map (step_all hors) ts)
-  | App(_ as t1, ts) -> App(t1,List.map (step_all hors) ts)
+  | App(Ctor(s,tp),ts) -> mkApp (mkCtor s tp) @@ List.map (step_all hors) ts
+  | App(_ as t1, ts) -> mkApp t1 @@ List.map (step_all hors) ts
   | Ctor(_,_) as t -> t
   | Var(_) as t -> t
   | Bottom as t -> t
@@ -138,8 +139,8 @@ let step_all_until_terminal hors term =
             in
               one_reduction term
           end
-      | App(Ctor(s,tp),ts) -> App(Ctor(s,tp),List.map inner ts)
-      | App(App(_,_) as t,ts) -> App(inner t, ts) (* TODO IO/OI *)
+      | App(Ctor(s,tp),ts) -> mkApp (mkCtor s tp) @@ List.map inner ts
+      | App(App(_,_) as t,ts) -> mkApp (inner t) ts (* TODO IO/OI *)
       | App(_,_) as t -> t
       | Ctor(_,_) as t -> t
       | Var(x) as t -> t
@@ -165,10 +166,10 @@ end
 
 let rec cut_after_n n term =
   if n = 0 then
-    Bottom
+    mkBottom
   else
     match term with
-      | App(Ctor(s,tp),ts) -> App(Ctor(s,tp),List.map (cut_after_n (n-1)) ts)
+      | App(Ctor(s,tp),ts) -> mkApp (mkCtor s tp) @@ List.map (cut_after_n (n-1)) ts
       | App(_,_) -> term
       | Ctor(_,_) -> term
       | Var(_) -> term
@@ -177,14 +178,14 @@ let rec cut_after_n n term =
 let rec cut_nonterminals t =
   log_debug_in "cut_nonterminals" [("t", Term.string_of t)];
   let res = match t with
-    | App(Ctor(s,_),_) when is_non_terminal s -> Bottom
-    | App(Ctor(s,tp),ts) -> App(Ctor(s,tp),List.map cut_nonterminals ts)
+    | App(Ctor(s,_),_) when is_non_terminal s -> mkBottom
+    | App(Ctor(s,tp),ts) -> mkApp (mkCtor s tp) @@ List.map cut_nonterminals ts
     | App(t,ts) ->
         let t_without = cut_nonterminals t in
-          if t_without = Bottom then
-            Bottom
+          if t_without = mkBottom then
+            mkBottom
           else
-            App(t_without,List.map cut_nonterminals ts)
+            mkApp t_without @@ List.map cut_nonterminals ts
     | _ as t -> t
   in
     log_debug_out "cut_nonterminals" [("res", Term.string_of res)];
@@ -193,8 +194,8 @@ let rec cut_nonterminals t =
 let rec cut_bottom_leaves t = 
   log_debug_in "cut_bottom_leaves" [("t", Term.string_of t)];
   let res = match t with
-    | App(t,ts) when List.for_all (fun x -> x = Bottom) ts -> App(t,[])
-    | App(Ctor(s,tp),ts) -> App(Ctor(s,tp),List.map cut_bottom_leaves ts)
+    | App(t,ts) when List.for_all (fun x -> x = mkBottom) ts -> mkApp t []
+    | App(Ctor(s,tp),ts) -> mkApp (mkCtor s tp) @@ List.map cut_bottom_leaves ts
     | _ as t -> t
   in
     log_debug_out "cut_bottom_leaves" [("res", Term.string_of res)];
@@ -247,5 +248,5 @@ let contexts (hors : t) (depth : int) : TermSet.t =
       else
         fp_run ctxts' t
   in
-    fp_run TermSet.empty (App(Ctor(sname,stp),[]))
+    fp_run TermSet.empty (mkApp (mkCtor sname stp) [])
 

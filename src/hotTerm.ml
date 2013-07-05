@@ -5,11 +5,19 @@ exception Path_not_found_in_term
 module type S = sig
   type atype
 
-  type t =
+  type t = private
     | App of t * t list
     | Ctor of string * atype
     | Var of string
     | Bottom
+
+  val mkApp : t -> t list -> t
+
+  val mkCtor : string -> atype -> t
+
+  val mkVar : string -> t
+
+  val mkBottom : t
 
   val string_of : ?sort:bool -> t -> string
 
@@ -29,11 +37,21 @@ end
 
 module Make = functor (ASort : HotTypes.S) -> struct
   type atype = ASort.t
-  type t =
+  type t = 
     | App of t * t list
     | Ctor of string * atype
     | Var of string
     | Bottom
+
+  let mkApp t ts = match t with
+    | App(Ctor(s,tp), []) -> App(Ctor(s,tp),ts)
+    | _ -> App(t,ts)
+
+  let mkCtor s t = Ctor(s,t)
+
+  let mkVar s = Var(s)
+
+  let mkBottom = Bottom
 
   let rec string_of ?(sort=false) = function
     | App(t,[]) -> Printf.sprintf "%s" (string_of ~sort:sort t)
@@ -120,7 +138,18 @@ module Make = functor (ASort : HotTypes.S) -> struct
               end
           | _ -> raise Path_not_found_in_term
 
-  let is_welldefined term = false
+  let rec is_welldefined_list ts = List.fold_right (fun t ack -> ack && is_welldefined t) ts true
+
+  and is_welldefined term = match term with
+    | Bottom -> true
+    | Var(_) -> true
+    | App(Bottom,_) -> false
+    | App(Var(_),ts) -> is_welldefined_list ts
+    | App(Ctor(_,a),ts) ->
+        if ASort.arity a == List.length ts
+        then is_welldefined_list ts
+        else false
+    | _ -> false (* TODO Check *)
 
   let rec depth = function
     | Bottom -> 1
