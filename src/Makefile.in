@@ -35,7 +35,9 @@ SOURCES = \
 		  hotHORS.mli \
 		  hotHORS.ml \
 		  hotRankedAlphabet.mli \
-		  hotRankedAlphabet.ml
+		  hotRankedAlphabet.ml \
+		  hotSimple.mli \
+		  hotSimple.ml
 
 # the name of the resulting executable
 RESULT  = higherOrderTools

@@ -94,10 +94,10 @@ module Rules :
 type t
 
 (** The type of the ranked alphabet used internally. *)
-type ra = HotRankedAlphabet.StringRankedAlphabet.t
+type ra = HotSimple.StringRankedAlphabet.t
 
 (** The type of a symbol of a ranked alphabet used internally. *)
-type raelt = HotRankedAlphabet.StringRankedAlphabet.elt
+type raelt = HotSimple.StringRankedAlphabet.elt
 
 (** Create a new HORS by providing a ranked alphabet of
 terminal symbols, a ranked alphabet of non-terminal symbols,

@@ -37,8 +37,8 @@ compare = compare end)
         min_elt rule'
 end
 
-type ra = HotRankedAlphabet.StringRankedAlphabet.t
-type raelt = HotRankedAlphabet.StringRankedAlphabet.elt
+type ra = HotSimple.StringRankedAlphabet.t
+type raelt = HotSimple.StringRankedAlphabet.elt
 
 type t =
     {

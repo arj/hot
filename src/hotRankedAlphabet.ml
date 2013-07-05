@@ -1,7 +1,5 @@
 open Batteries
 
-module Sort = HotTypes.Sort
-
 module type RANKEDELEMENT = sig
   include BatSet.OrderedType
 
@@ -38,15 +36,3 @@ module Make = functor(S : RANKEDELEMENT) -> struct
 
   let string_of_elt = S.string_of
 end
-
-module StringRankedAlphabet : S with type elt = string *
-                                                 Sort.t = Make(
-    struct
-      type name = string
-      type t = name * Sort.t
-      let compare = compare
-      let order (_,t) = Sort.order t
-      let arity (_,t) = Sort.arity t
-      let string_of (n,t) =
-        Printf.sprintf "%s:%s" n (Sort.string_of t)
-    end)
