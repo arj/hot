@@ -1,6 +1,6 @@
-(** In this module, a higher-order recursion scheme (HORS) is defined.
-  For reference, please see e.g. Kobayashi, Naoki - Higher-Order Model Checking:
-  From Theory to Practice.
+(** In this module, a pattern-matching recursion scheme (PMRS) is defined.
+  For reference, please see Ong and Ramsay - Verifying higher-order functional
+  programs with pattern-matching algebraic data types. POPL2011.
 
   @author Robert Jakob
 *)
@@ -13,18 +13,26 @@ module type S = sig
   (** The type of the HORS. *)
   type t
 
-  (** The type of the ranked alphabet used internally. *)
-  type ra
+  (** The type of the ranked alphabet used for the terminal symbols. *)
+  type terminals
 
-  (** Creates an empty HORS. *)
-  val create : unit -> t
+  (** The type of the ranked alphabet used for the nonterminal symbols. *)
+  type nonterminals
+
+  (** Creates an empty PMRS. *)
+  val empty : t
+
+  (** Create a new PMRS with an alphabet of terminals, nonterminals, a set of
+    rules and an initial terminal symbol as starting point. *)
+  val create : terminals -> nonterminals -> HotExtBatSet.S.t
+                -> terminalsymbol -> t
 
   (** {1 Predicates} *)
 
   (** Checks wether the given HORS is safe according to the
     syntactic definition of safety in e.g. Knapik, T. et al. Higher-Order
     Pushdown Trees are easy. FoSSaCS’02. *)
-  val is_safe : t -> bool
+  (*val is_safe : t -> bool*)
 
   (** {1 Utilities} *)
 
