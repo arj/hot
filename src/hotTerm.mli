@@ -11,13 +11,14 @@ exception Path_not_found_in_term
 (** The signature of a term module. *)
 module type S = sig
 
-  (** The type of the type of a constructor term. *)
-  type atype
+  (** The type of a constructor (ranked element), typically an element of a
+    ranked alphabet. *)
+  type re
 
   (** The type of a term. *)
   type t = private
     | App of t * t list
-    | Ctor of string * atype
+    | Ctor of re
     | Var of string
     | Bottom
 
@@ -26,7 +27,7 @@ module type S = sig
   val mkApp : t -> t list -> t
 
   (** Creates a constructor term with a type. *)
-  val mkCtor : string -> atype -> t
+  val mkCtor : re -> t
 
   (** Creates a variable. *)
   val mkVar : string -> t
@@ -109,17 +110,17 @@ module type S = sig
 end
 
 module Make :
-  functor (ASort : HotType.S) ->
+  functor (RA : HotRankedAlphabet.S) ->
     sig
-      type atype = ASort.t
+      type re = RA.elt
       type t = private
         | App of t * t list
-        | Ctor of string * atype
+        | Ctor of re
         | Var of string
         | Bottom
 
       val mkApp : t -> t list -> t
-      val mkCtor : string -> atype -> t
+      val mkCtor : re -> t
       val mkVar : string -> t
       val mkBottom : t
 
@@ -137,34 +138,3 @@ module Make :
         val (-.) : t -> HotPath.t -> t
       end
     end
-
-(** Sort term represents terms with their constructor types beeing sorts. *)
-module SortTerm : sig
-  type atype = HotType.Sort.t
-  type t = private
-    | App of t * t list
-    | Ctor of string * atype
-    | Var of string
-    | Bottom
-
-  val mkApp : t -> t list -> t
-  val mkCtor : string -> atype -> t
-  val mkVar : string -> t
-  val mkBottom : t
-
-  val string_of : ?sort:bool -> t -> string
-  val eta_reduce : t -> t
-  val subst : string -> t -> t -> t
-  val subst_path : HotPath.t -> t -> t -> t
-  val path : t -> string -> HotPath.t option
-  val read : t -> HotPath.t -> t
-  val is_welldefined : t -> bool
-  val depth : t -> int
-
-  module Infix : sig
-    val (-->) : t -> string -> HotPath.t option
-    val (-.) : t -> HotPath.t -> t
-  end
-end
-
-(* TODO Create term module instance from a given RankedAlphabet's type? *)

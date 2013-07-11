@@ -3,17 +3,17 @@ open Batteries
 exception Path_not_found_in_term
 
 module type S = sig
-  type atype
+  type re
 
   type t = private
     | App of t * t list
-    | Ctor of string * atype
+    | Ctor of re
     | Var of string
     | Bottom
 
   val mkApp : t -> t list -> t
 
-  val mkCtor : string -> atype -> t
+  val mkCtor : re -> t
 
   val mkVar : string -> t
 
@@ -35,11 +35,11 @@ module type S = sig
   end
 end
 
-module Make = functor (ASort : HotType.S) -> struct
-  type atype = ASort.t
+module Make = functor (RA : HotRankedAlphabet.S) -> struct
+  type re = RA.elt
   type t = 
     | App of t * t list
-    | Ctor of string * atype
+    | Ctor of re
     | Var of string
     | Bottom
 
@@ -47,7 +47,7 @@ module Make = functor (ASort : HotType.S) -> struct
     | App(Ctor(s,tp), []) -> App(Ctor(s,tp),ts)
     | _ -> App(t,ts)
 
-  let mkCtor s t = Ctor(s,t)
+  let mkCtor re = Ctor(re(
 
   let mkVar s = Var(s)
 
@@ -59,16 +59,12 @@ module Make = functor (ASort : HotType.S) -> struct
         Printf.sprintf "%s(%s)"
           (string_of ~sort:sort t)
           (String.concat "," (List.map (string_of ~sort:sort) ts))
-    | Ctor(c,tp) ->
-        if sort then
-          Printf.sprintf "%s:%s" c (ASort.string_of tp)
-        else
-          c
+    | Ctor(re) -> RA.string_of_elt re
     | Var(x) -> x
     | Bottom -> "_|_"
 
   let rec eta_reduce = function
-    | App(App(Ctor(s,tp), []),ts) -> App(Ctor(s,tp),ts)
+    | App(App(Ctor(re), []),ts) -> App(Ctor(re),ts)
     | App(t1,ts) -> App(eta_reduce t1, List.map eta_reduce ts)
     | _ as t -> t
 
@@ -76,7 +72,7 @@ module Make = functor (ASort : HotType.S) -> struct
     | App(t,ts) -> eta_reduce (App(subst x newterm t, List.map (subst x newterm) ts))
     | Var(y) when x = y -> newterm 
     | Var(_)
-    | Ctor(_,_)
+    | Ctor(_)
     | Bottom -> c
 
   let rec subst_path path newterm term = match term,path with
@@ -84,7 +80,7 @@ module Make = functor (ASort : HotType.S) -> struct
     | Bottom,_ -> raise Path_not_found_in_term
     | Var(_),HotPath.Empty -> newterm
     | Var(_),_ -> raise Path_not_found_in_term
-    | App(Ctor(c,st), ts), HotPath.Ele(d,idx,path') when c = d ->
+    | App(Ctor(c), ts), Path.Ele(d,idx,path') when c = d ->
         let len = List.length ts in
           if idx >= len then
             raise Path_not_found_in_term
@@ -96,10 +92,10 @@ module Make = functor (ASort : HotType.S) -> struct
               in
                 App(Ctor(c,st), ts')
             end
-    | Ctor(_,_), HotPath.Empty -> newterm
+    | Ctor(_), HotPath.Empty -> newterm
     | App(_,_), HotPath.Empty -> newterm
     | App(_,_), _
-    | Ctor(_,_), _ -> raise Path_not_found_in_term
+    | Ctor(_), _ -> raise Path_not_found_in_term
 
 
   let path term var =
@@ -108,26 +104,26 @@ module Make = functor (ASort : HotType.S) -> struct
       | App(App(t,_),_) -> path_inner path_so_far t
       | App(Var(x), _)
       | Var(x) -> if x = var then Some path_so_far else None
-      | App(Ctor(c,_), ts) ->
+      | App(Ctor(c), ts) ->
           begin
-            let new_path i = HotPath.Ele(c,i,path_so_far) in
+            let new_path i = Path.Ele(c,i,path_so_far) in
             let paths = List.mapi (fun i t -> path_inner (new_path i) t) ts in
             let paths_non_none = List.filter BatOption.is_some paths in
               match paths_non_none with
                 | [] -> None
                 | x :: _ -> x
           end
-      | Ctor(_,_) -> None
+      | Ctor(_) -> None
       | App(_,_) -> None
 
     in
-    let res = path_inner HotPath.epsilon term in
-      BatOption.map HotPath.reverse res
+    let res = path_inner Path.epsilon term in
+      BatOption.map Path.reverse res
 
 
   let rec read term path = match path with
-    | HotPath.Empty -> term
-    | HotPath.Ele(c,i,p') ->
+    | Path.Empty -> term
+    | Path.Ele(c,i,p') ->
         match term with
           | App(Ctor(ac,_),ts) when c = ac ->
               begin

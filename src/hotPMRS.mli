@@ -16,16 +16,16 @@ module type S = sig
   (** The type of the ranked alphabet used for the terminal symbols. *)
   type terminals
 
+  (** Type of a terminal symbol *)
+  type terminal
+
   (** The type of the ranked alphabet used for the nonterminal symbols. *)
   type nonterminals
-
-  (** Creates an empty PMRS. *)
-  val empty : t
 
   (** Create a new PMRS with an alphabet of terminals, nonterminals, a set of
     rules and an initial terminal symbol as starting point. *)
   val create : terminals -> nonterminals -> HotExtBatSet.S.t
-                -> terminalsymbol -> t
+                -> terminal -> t
 
   (** {1 Predicates} *)
 
@@ -39,4 +39,3 @@ module type S = sig
   (** Returns a human-readable representation from a given HORS. *)
   val string_of : t -> string
 end
-
