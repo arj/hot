@@ -12,15 +12,22 @@ module type S = sig
   val string_of : t -> string
 end
 
+(* TODO Term.re should be union type of terminals.elt and nonterminals.elt? *)
+(* TODO We need two different terms: one for terminals only and one for both.
+  Can this be created on the fly via a term? *)
+
 module Make = functor(Terminals : HotRankedAlphabet.S) ->
-  functor(Nonterminals : HotRankedAlphabet.S) ->
-  functor(Term : HotTerm.S) -> struct
+  functor(Nonterminals : HotRankedAlphabet.S with type elt = Terminals.elt) ->
+  functor(Term : HotTerm.S with type re = Nonterminals.elt) -> struct
+
+    module Rules = HotExtBatSet.Make(struct type t = Nonterminals.elt * Term.t * Term.t
+                                       let compare = compare end)
 
     type terminals = Terminals.t
     type terminal = Terminals.elt 
     type nonterminals = Nonterminals.t
     type term = Term.t
-    type rules = int list
+    type rules = Rules.t
 
     type t = {
       s: terminals;
@@ -36,5 +43,23 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
       i = i;
     }
 
-    let string_of pmrs = failwith "Not yet implemented"
+    let string_of pmrs =
+      let s_string = Terminals.string_of pmrs.s  in
+      let n_string = Nonterminals.string_of pmrs.n  in
+      let r_string =
+        let io = BatIO.output_string () in
+        let string_of_rule (n,p,t) = Printf.sprintf "%s %s %s -> %s"
+                                       (Nonterminals.string_of_elt n)
+                                       ("") (*TODO Vars *)
+                                       (Term.string_of p)
+                                       (Term.string_of t) in
+          Rules.print ~sep:("\n")
+            (fun out rule -> BatIO.nwrite out (string_of_rule rule)) io pmrs.r;
+          BatIO.close_out io in
+      let i_string = Terminals.string_of_elt pmrs.i in
+        Printf.sprintf "<%s,%s,\n%s,\n%s>"
+          s_string
+          n_string
+          r_string
+          i_string
 end

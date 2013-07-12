@@ -5,7 +5,7 @@
   @author Robert Jakob
 *)
 
-(** The standard signature of a HORS. *)
+(** The standard signature of a PMRS. *)
 module type S = sig
 
   (** {1 Types} *)
