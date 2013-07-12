@@ -10,9 +10,6 @@ module type S = sig
 
   (** {1 Types} *)
 
-  (** The type of the HORS. *)
-  type t
-
   (** The type of the ranked alphabet used for the terminal symbols. *)
   type terminals
 
@@ -22,9 +19,16 @@ module type S = sig
   (** The type of the ranked alphabet used for the nonterminal symbols. *)
   type nonterminals
 
+  type term
+
+  type rules
+
+  (** The type of the HORS. *)
+  type t
+
   (** Create a new PMRS with an alphabet of terminals, nonterminals, a set of
     rules and an initial terminal symbol as starting point. *)
-  val create : terminals -> nonterminals -> HotExtBatSet.S.t
+  val create : terminals -> nonterminals -> rules
                 -> terminal -> t
 
   (** {1 Predicates} *)

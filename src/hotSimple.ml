@@ -8,3 +8,5 @@
 module StringRankedAlphabet : HotRankedAlphabet.S with type elt = string *
                                                  HotType.Sort.t =
   HotRankedAlphabet.Make(HotHelper.HotExtBatString)(HotType.Sort)
+
+module StringSortTerm = HotTerm.Make(StringRankedAlphabet)

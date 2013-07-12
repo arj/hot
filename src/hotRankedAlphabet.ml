@@ -8,6 +8,10 @@ module type S = sig
   val string_of_elt : elt -> string
 
   val string_of : t -> string
+
+  val order_of_elt : elt -> int
+
+  val arity_of_elt : elt -> int
 end
 
 module Make = functor(Elt : HotInterfaces.ORDEREDPRINTABLE) ->
@@ -30,4 +34,8 @@ struct
         (fun io e -> BatIO.nwrite io @@ string_of_elt e)
         io ra;
       BatIO.close_out io
+
+  let order_of_elt e = Type.order (snd e)
+
+  let arity_of_elt e = Type.arity (snd e)
 end

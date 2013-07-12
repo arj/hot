@@ -24,6 +24,12 @@ module type S =
 
     (** String representation of the entire alphabet. *)
     val string_of : t -> string
+
+    (** The order of a given element. *)
+    val order_of_elt : elt -> int
+
+    (** The arity of a given element. *)
+    val arity_of_elt : elt -> int
   end
 
 (** Creates a new ranked alphabet from an implementation for an
@@ -45,4 +51,10 @@ module Make :
       (** Prints a string representation of the ranked alphabet.
         Details are implementation specific. *)
       val string_of : t -> string
+
+      (** The order of a given element. *)
+      val order_of_elt : elt -> int
+
+      (** The arity of a given element. *)
+      val arity_of_elt : elt -> int
     end

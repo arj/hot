@@ -20,7 +20,7 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
     type terminal = Terminals.elt 
     type nonterminals = Nonterminals.t
     type term = Term.t
-    type rules = HotExtBatSet.S.t (*TODO Fix this. *)
+    type rules = int list
 
     type t = {
       s: terminals;

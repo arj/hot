@@ -29,16 +29,16 @@ SOURCES = \
 		  hotHelper.ml \
 		  hotType.mli \
 		  hotType.ml \
-		  hotPath.mli \
-		  hotPath.ml \
 		  hotTerm.mli \
 		  hotTerm.ml \
-		  hotHORS.mli \
-		  hotHORS.ml \
 		  hotRankedAlphabet.mli \
 		  hotRankedAlphabet.ml \
+		  hotPMRS.mli \
+		  hotPMRS.ml \
 		  hotSimple.mli \
-		  hotSimple.ml
+		  hotSimple.ml \
+#		  hotHORS.mli \
+#		  hotHORS.ml \
 
 # the name of the resulting executable
 RESULT  = higherOrderTools

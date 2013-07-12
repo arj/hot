@@ -19,20 +19,40 @@ module type S = sig
 
   val mkBottom : t
 
+  module type Path = sig
+    type termt = t
+    type t =
+      | Empty
+      | Ele of re * int * t
+
+    val epsilon : t
+
+    val string_of : ?epsilon:bool -> t -> string
+
+    val append : t -> t -> t
+
+    val reverse : t -> t
+
+    val is_empty : t -> bool
+
+    val subst_path : t -> termt -> termt -> termt
+
+    val path : termt -> string -> t option
+
+    val read : termt -> t -> termt
+
+    module type Infix = sig
+      val (-->) : termt -> string -> t option
+      val (-.) : termt -> t -> termt
+    end
+  end
+
   val string_of : ?sort:bool -> t -> string
 
   val eta_reduce : t -> t
   val subst : string -> t -> t -> t
-  val subst_path : HotPath.t -> t -> t -> t
-  val path : t -> string -> HotPath.t option
-  val read : t -> HotPath.t -> t
   val is_welldefined : t -> bool
   val depth : t -> int
-
-  module type Infix = sig
-    val (-->) : t -> string -> HotPath.t option
-    val (-.) : t -> HotPath.t -> t
-  end
 end
 
 module Make = functor (RA : HotRankedAlphabet.S) -> struct
@@ -44,14 +64,115 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | Bottom
 
   let mkApp t ts = match t with
-    | App(Ctor(s,tp), []) -> App(Ctor(s,tp),ts)
+    | App(Ctor(s), []) -> App(Ctor(s),ts)
     | _ -> App(t,ts)
 
-  let mkCtor re = Ctor(re(
+  let mkCtor re = Ctor(re)
 
   let mkVar s = Var(s)
 
   let mkBottom = Bottom
+
+  module Path = struct
+    type termt = t
+    type t =
+      | Empty
+      | Ele of re * int * t
+
+    let epsilon = Empty
+
+    let string_of ?(epsilon=false) p =
+      let rec string_of' = function
+        | Empty -> []
+        | Ele(c,i,p') ->
+            (c,i) :: string_of' p'
+      in
+        match p with
+          | Empty when epsilon -> "{epsilon}"
+          | _ ->
+              let f (c,i) = Printf.sprintf "%s.%i" (RA.string_of_elt c) i in
+              let ps = BatList.map f (string_of' p) in
+                String.concat "." ps
+
+    let rec append p1 p2 = match p1 with
+      | Empty -> p2
+      | Ele(c,i,p') -> Ele(c,i,append p' p2)
+
+    let rec rev_append p1 p2 = match p1 with
+      | Empty -> p2
+      | Ele(c1,i1,p) -> rev_append p (Ele(c1,i1,p2))
+
+    let reverse p = rev_append p Empty
+
+    let is_empty = function
+      | Empty -> true
+      | Ele(_,_,_) -> false
+
+    let rec subst_path path newterm term = match term,path with
+      | Bottom,Empty -> newterm
+      | Bottom,_ -> raise Path_not_found_in_term
+      | Var(_),Empty -> newterm
+      | Var(_),_ -> raise Path_not_found_in_term
+      | App(Ctor(c), ts), Ele(d,idx,path') when c = d ->
+          let len = List.length ts in
+            if idx >= len then
+              raise Path_not_found_in_term
+            else
+              begin
+                let ts' = BatList.mapi
+                            (fun i t -> if i = idx then subst_path path' newterm t else t)
+                            ts
+                in
+                  App(Ctor(c), ts')
+              end
+      | Ctor(_), Empty -> newterm
+      | App(_,_), Empty -> newterm
+      | App(_,_), _
+      | Ctor(_), _ -> raise Path_not_found_in_term
+
+
+    let path term var =
+      let rec path_inner path_so_far term : t option = match term with
+        | Bottom -> None
+        | App(App(t,_),_) -> path_inner path_so_far t
+        | App(Var(x), _)
+        | Var(x) -> if x = var then Some path_so_far else None
+        | App(Ctor(c), ts) ->
+            begin
+              let new_path i = Ele(c,i,path_so_far) in
+              let paths = List.mapi (fun i t -> path_inner (new_path i) t) ts in
+              let paths_non_none = List.filter BatOption.is_some paths in
+                match paths_non_none with
+                  | [] -> None
+                  | x :: _ -> x
+            end
+        | Ctor(_) -> None
+        | App(_,_) -> None
+
+      in
+      let res = path_inner epsilon term in
+        BatOption.map reverse res
+
+
+    let rec read term path = match path with
+      | Empty -> term
+      | Ele(c,i,p') ->
+          match term with
+            | App(Ctor(ac),ts) when c = ac ->
+                begin
+                  try
+                    read (List.nth ts i) p'
+                  with
+                    | Invalid_argument _ -> raise Path_not_found_in_term
+                end
+            | _ -> raise Path_not_found_in_term
+
+
+    module Infix = struct
+      let (-->) = path
+      let (-.) = read
+    end
+  end
 
   let rec string_of ?(sort=false) = function
     | App(t,[]) -> Printf.sprintf "%s" (string_of ~sort:sort t)
@@ -75,65 +196,6 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | Ctor(_)
     | Bottom -> c
 
-  let rec subst_path path newterm term = match term,path with
-    | Bottom,HotPath.Empty -> newterm
-    | Bottom,_ -> raise Path_not_found_in_term
-    | Var(_),HotPath.Empty -> newterm
-    | Var(_),_ -> raise Path_not_found_in_term
-    | App(Ctor(c), ts), Path.Ele(d,idx,path') when c = d ->
-        let len = List.length ts in
-          if idx >= len then
-            raise Path_not_found_in_term
-          else
-            begin
-              let ts' = BatList.mapi
-                          (fun i t -> if i = idx then subst_path path' newterm t else t)
-                          ts
-              in
-                App(Ctor(c,st), ts')
-            end
-    | Ctor(_), HotPath.Empty -> newterm
-    | App(_,_), HotPath.Empty -> newterm
-    | App(_,_), _
-    | Ctor(_), _ -> raise Path_not_found_in_term
-
-
-  let path term var =
-    let rec path_inner path_so_far term : HotPath.t option = match term with
-      | Bottom -> None
-      | App(App(t,_),_) -> path_inner path_so_far t
-      | App(Var(x), _)
-      | Var(x) -> if x = var then Some path_so_far else None
-      | App(Ctor(c), ts) ->
-          begin
-            let new_path i = Path.Ele(c,i,path_so_far) in
-            let paths = List.mapi (fun i t -> path_inner (new_path i) t) ts in
-            let paths_non_none = List.filter BatOption.is_some paths in
-              match paths_non_none with
-                | [] -> None
-                | x :: _ -> x
-          end
-      | Ctor(_) -> None
-      | App(_,_) -> None
-
-    in
-    let res = path_inner Path.epsilon term in
-      BatOption.map Path.reverse res
-
-
-  let rec read term path = match path with
-    | Path.Empty -> term
-    | Path.Ele(c,i,p') ->
-        match term with
-          | App(Ctor(ac,_),ts) when c = ac ->
-              begin
-                try
-                  read (List.nth ts i) p'
-                with
-                  | Invalid_argument _ -> raise Path_not_found_in_term
-              end
-          | _ -> raise Path_not_found_in_term
-
   let rec is_welldefined_list ts = List.fold_right (fun t ack -> ack && is_welldefined t) ts true
 
   and is_welldefined term = match term with
@@ -141,8 +203,8 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | Var(_) -> true
     | App(Bottom,_) -> false
     | App(Var(_),ts) -> is_welldefined_list ts
-    | App(Ctor(_,a),ts) ->
-        if ASort.arity a == List.length ts
+    | App(Ctor(c),ts) ->
+        if RA.arity_of_elt c == List.length ts
         then is_welldefined_list ts
         else false
     | _ -> false (* TODO Check *)
@@ -153,12 +215,5 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | App(_,ts) ->
         let depths = List.map depth ts in
           List.max (0 :: depths) + 1
-    | Ctor(_,_) -> failwith "May not occur"
-
-  module Infix = struct
-    let (-->) = path
-    let (-.) = read
-  end
+    | Ctor(_) -> failwith "May not occur"
 end
-
-module SortTerm = Make(HotType.Sort)
