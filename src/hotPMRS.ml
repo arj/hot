@@ -15,6 +15,8 @@ end
 (* TODO Term.re should be union type of terminals.elt and nonterminals.elt? *)
 (* TODO We need two different terms: one for terminals only and one for both.
   Can this be created on the fly via a term? *)
+(* TODO Extend with a wrapper which takes one term and constructs a term
+  which distinguishes between the two using a data constructor. *)
 
 module Make = functor(Terminals : HotRankedAlphabet.S) ->
   functor(Nonterminals : HotRankedAlphabet.S with type elt = Terminals.elt) ->

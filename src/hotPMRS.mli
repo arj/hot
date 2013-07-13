@@ -43,3 +43,23 @@ module type S = sig
   (** Returns a human-readable representation from a given HORS. *)
   val string_of : t -> string
 end
+
+(** Creates a new module based on an implementation for
+  terminals, nonterminals and a term. *)
+module Make :
+  functor (Terminals : HotRankedAlphabet.S) ->
+    functor
+      (Nonterminals : HotRankedAlphabet.S with type elt = Terminals.elt) ->
+      functor
+        (Term : HotTerm.S with type re = Nonterminals.elt) ->
+        sig
+          module Rules : HotExtBatSet.S with type elt = Nonterminals.elt * Term.t * Term.t
+          type terminals = Terminals.t
+          type terminal = Terminals.elt
+          type nonterminals = Nonterminals.t
+          type term = Term.t
+          type rules = Rules.t
+          type t
+          val create : terminals -> nonterminals -> rules -> terminal -> t
+          val string_of : t -> string
+        end
