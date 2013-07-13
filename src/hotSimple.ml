@@ -10,3 +10,6 @@ module StringRankedAlphabet : HotRankedAlphabet.S with type elt = string *
   HotRankedAlphabet.Make(HotHelper.HotExtBatString)(HotType.Sort)
 
 module StringSortTerm = HotTerm.Make(StringRankedAlphabet)
+
+module StringSortPMRS =
+  HotPMRS.Make(StringRankedAlphabet)(StringRankedAlphabet)(StringSortTerm)
