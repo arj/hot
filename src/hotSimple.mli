@@ -16,6 +16,6 @@ module StringSortTerm : HotTerm.S with type re = StringRankedAlphabet.elt
   types. *)
 module StringSortPMRS : HotPMRS.S with
 type terminals = StringRankedAlphabet.t and
-type terminal = StringRankedAlphabet.elt and
+type nonterminal = StringRankedAlphabet.elt and
 type nonterminals = StringRankedAlphabet.t and
 type term = StringSortTerm.t

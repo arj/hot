@@ -8,13 +8,15 @@
 (** The standard signature of a PMRS. *)
 module type S = sig
 
+  module Rules : HotExtBatSet.S
+
   (** {1 Types} *)
 
   (** The type of the ranked alphabet used for the terminal symbols. *)
   type terminals
 
-  (** Type of a terminal symbol *)
-  type terminal
+  (** Type of a nonterminal symbol *)
+  type nonterminal
 
   (** The type of the ranked alphabet used for the nonterminal symbols. *)
   type nonterminals
@@ -29,7 +31,7 @@ module type S = sig
   (** Create a new PMRS with an alphabet of terminals, nonterminals, a set of
     rules and an initial terminal symbol as starting point. *)
   val create : terminals -> nonterminals -> rules
-                -> terminal -> t
+                -> nonterminal -> t
 
   (** {1 Predicates} *)
 
@@ -55,11 +57,11 @@ module Make :
         sig
           module Rules : HotExtBatSet.S with type elt = Nonterminals.elt * Term.t * Term.t
           type terminals = Terminals.t
-          type terminal = Terminals.elt
+          type nonterminal = Nonterminals.elt
           type nonterminals = Nonterminals.t
           type term = Term.t
           type rules = Rules.t
           type t
-          val create : terminals -> nonterminals -> rules -> terminal -> t
+          val create : terminals -> nonterminals -> rules -> nonterminal -> t
           val string_of : t -> string
         end

@@ -1,14 +1,15 @@
 (** The standard signature of a HORS. *)
 module type S = sig
+  module Rules : HotExtBatSet.S
   type terminals
-  type terminal
+  type nonterminal
   type nonterminals
   type term
   type rules
   type t
 
   val create : terminals -> nonterminals -> rules
-                -> terminal -> t
+                -> nonterminal -> t
   val string_of : t -> string
 end
 
@@ -22,11 +23,12 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
   functor(Nonterminals : HotRankedAlphabet.S with type elt = Terminals.elt) ->
   functor(Term : HotTerm.S with type re = Nonterminals.elt) -> struct
 
+    (* TODO Put Rules signature in S? *)
     module Rules = HotExtBatSet.Make(struct type t = Nonterminals.elt * Term.t * Term.t
                                        let compare = compare end)
 
     type terminals = Terminals.t
-    type terminal = Terminals.elt 
+    type nonterminal = Nonterminals.elt 
     type nonterminals = Nonterminals.t
     type term = Term.t
     type rules = Rules.t
@@ -35,7 +37,7 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
       s: terminals;
       n: nonterminals;
       r: rules;
-      i: terminal;
+      i: nonterminal;
     }
 
     let create s n r i = {
