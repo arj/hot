@@ -19,7 +19,7 @@ module type S = sig
 
   val mkBottom : t
 
-  module type Path = sig
+  module Path : sig
     type termt = t
     type t =
       | Empty
@@ -41,7 +41,7 @@ module type S = sig
 
     val read : termt -> t -> termt
 
-    module type Infix = sig
+    module Infix : sig
       val (-->) : termt -> string -> t option
       val (-.) : termt -> t -> termt
     end

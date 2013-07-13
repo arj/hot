@@ -44,7 +44,7 @@ module type S = sig
 
     @author Robert Jakob
     *)
-  module type Path = sig
+  module Path : sig
     type termt = t
     (** Internal path representation. *)
     type t =
@@ -106,7 +106,7 @@ module type S = sig
     val read : termt -> t -> termt
 
     (** Defines infix operators for some regularly used functions. *)
-    module type Infix = sig
+    module Infix : sig
 
       (** Return path to variable. Infix variant of {!HotTerm.S.Path.path}. *)
       val (-->) : termt -> string -> t option
