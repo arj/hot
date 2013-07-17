@@ -11,6 +11,9 @@ module type S = sig
 
   val create : terminals -> nonterminals -> Rules.t
                 -> nonterminal -> t
+
+  val disjoint_union : t list -> nonterminal -> t
+
   val string_of : t -> string
 end
 
@@ -46,6 +49,16 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
       r = r;
       i = i;
     }
+
+    let disjoint_union_two i p1 p2 = {
+      s = Terminals.union p1.s p2.s;
+      n = Nonterminals.union p1.n p2.n;
+      r = Rules.union p1.r p2.r;
+      i
+    }
+
+    let disjoint_union ps i =
+      BatList.reduce (disjoint_union_two i) ps 
 
     let string_of pmrs =
       let s_string = Terminals.string_of pmrs.s  in

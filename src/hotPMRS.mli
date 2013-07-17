@@ -32,6 +32,11 @@ module type S = sig
   val create : terminals -> nonterminals -> Rules.t
                 -> nonterminal -> t
 
+  (** Creates the disjoint union of a list of PMRS, i.e. assumes
+    that the PMRS are disjoint in their rules.
+    Requires a new start symbol to be given. *)
+  val disjoint_union : t list -> nonterminal -> t
+
   (** {1 Predicates} *)
 
   (** Checks wether the given HORS is safe according to the
@@ -61,5 +66,6 @@ module Make :
           type term = Term.t
           type t
           val create : terminals -> nonterminals -> Rules.t -> nonterminal -> t
+          val disjoint_union : t list -> nonterminal -> t
           val string_of : t -> string
         end
