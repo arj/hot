@@ -5,10 +5,9 @@ module type S = sig
   type nonterminal
   type nonterminals
   type term
-  type rules
   type t
 
-  val create : terminals -> nonterminals -> rules
+  val create : terminals -> nonterminals -> Rules.t
                 -> nonterminal -> t
   val string_of : t -> string
 end
@@ -31,12 +30,11 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
     type nonterminal = Nonterminals.elt 
     type nonterminals = Nonterminals.t
     type term = Term.t
-    type rules = Rules.t
 
     type t = {
       s: terminals;
       n: nonterminals;
-      r: rules;
+      r: Rules.t;
       i: nonterminal;
     }
 

@@ -23,14 +23,12 @@ module type S = sig
 
   type term
 
-  type rules
-
   (** The type of the HORS. *)
   type t
 
   (** Create a new PMRS with an alphabet of terminals, nonterminals, a set of
     rules and an initial terminal symbol as starting point. *)
-  val create : terminals -> nonterminals -> rules
+  val create : terminals -> nonterminals -> Rules.t
                 -> nonterminal -> t
 
   (** {1 Predicates} *)
@@ -60,8 +58,7 @@ module Make :
           type nonterminal = Nonterminals.elt
           type nonterminals = Nonterminals.t
           type term = Term.t
-          type rules = Rules.t
           type t
-          val create : terminals -> nonterminals -> rules -> nonterminal -> t
+          val create : terminals -> nonterminals -> Rules.t -> nonterminal -> t
           val string_of : t -> string
         end
