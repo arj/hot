@@ -54,7 +54,7 @@ module Make :
       functor
         (Term : HotTerm.S with type re = Nonterminals.elt) ->
         sig
-          module Rules : HotExtBatSet.S with type elt = Nonterminals.elt * Term.t * Term.t
+          module Rules : HotExtBatSet.S with type elt = Nonterminals.elt * string list * Term.t option * Term.t
           type terminals = Terminals.t
           type nonterminal = Nonterminals.elt
           type nonterminals = Nonterminals.t

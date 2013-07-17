@@ -18,4 +18,5 @@ module StringSortPMRS : HotPMRS.S with
 type terminals = StringRankedAlphabet.t and
 type nonterminal = StringRankedAlphabet.elt and
 type nonterminals = StringRankedAlphabet.t and
-type term = StringSortTerm.t
+type term = StringSortTerm.t and
+type Rules.elt = StringRankedAlphabet.elt * string list * StringSortTerm.t option * StringSortTerm.t

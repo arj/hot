@@ -1,3 +1,5 @@
+open Batteries
+
 (** The standard signature of a HORS. *)
 module type S = sig
   module Rules : HotExtBatSet.S
@@ -23,7 +25,7 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
   functor(Term : HotTerm.S with type re = Nonterminals.elt) -> struct
 
     (* TODO Put Rules signature in S? *)
-    module Rules = HotExtBatSet.Make(struct type t = Nonterminals.elt * Term.t * Term.t
+    module Rules = HotExtBatSet.Make(struct type t = Nonterminals.elt * string list * Term.t option * Term.t
                                        let compare = compare end)
 
     type terminals = Terminals.t
@@ -50,10 +52,10 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
       let n_string = Nonterminals.string_of pmrs.n  in
       let r_string =
         let io = BatIO.output_string () in
-        let string_of_rule (n,p,t) = Printf.sprintf "%s %s %s -> %s"
+        let string_of_rule (n,xs,p,t) = Printf.sprintf "%s %s %s ==> %s"
                                        (Nonterminals.string_of_elt n)
-                                       ("") (*TODO Vars *)
-                                       (Term.string_of p)
+                                       (String.concat " " xs)
+                                       (BatOption.map_default Term.string_of "" p)
                                        (Term.string_of t) in
           Rules.print ~sep:("\n")
             (fun out rule -> BatIO.nwrite out (string_of_rule rule)) io pmrs.r;
