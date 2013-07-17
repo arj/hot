@@ -22,5 +22,5 @@ Just run:
 `./bootstrap && ./configure && make <target> && make install`
 
 Replace `<target>` with
- - all (building stuff necessary for the library.)
- - everything (building stuff for the library, running tests and creating docs.)
+ - `all` (building stuff necessary for the library.)
+ - `everything` (building stuff for the library, running tests and creating docs.)
