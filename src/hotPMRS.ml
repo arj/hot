@@ -52,11 +52,12 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
       let n_string = Nonterminals.string_of pmrs.n  in
       let r_string =
         let io = BatIO.output_string () in
-        let string_of_rule (n,xs,p,t) = Printf.sprintf "%s %s %s ==> %s"
-                                       (Nonterminals.string_of_elt n)
-                                       (String.concat " " xs)
-                                       (BatOption.map_default Term.string_of "" p)
-                                       (Term.string_of t) in
+        let string_of_rule (n,xs,p,t) =
+          Printf.sprintf "%s %s %s ==> %s"
+            (Nonterminals.string_of_elt ~show_type:false n)
+            (String.concat " " xs)
+            (BatOption.map_default Term.string_of "" p)
+            (Term.string_of t) in
           Rules.print ~sep:("\n")
             (fun out rule -> BatIO.nwrite out (string_of_rule rule)) io pmrs.r;
           BatIO.close_out io in

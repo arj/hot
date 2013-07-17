@@ -47,7 +47,7 @@ module type S = sig
     end
   end
 
-  val string_of : ?sort:bool -> t -> string
+  val string_of : ?show_type:bool -> t -> string
 
   val eta_reduce : t -> t
   val subst : string -> t -> t -> t
@@ -174,13 +174,13 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     end
   end
 
-  let rec string_of ?(sort=false) = function
-    | App(t,[]) -> Printf.sprintf "%s" (string_of ~sort:sort t)
+  let rec string_of ?(show_type=false) = function
+    | App(t,[]) -> Printf.sprintf "%s" (string_of ~show_type:show_type t)
     | App(t,ts) ->
         Printf.sprintf "%s(%s)"
-          (string_of ~sort:sort t)
-          (String.concat "," (List.map (string_of ~sort:sort) ts))
-    | Ctor(re) -> RA.string_of_elt re
+          (string_of ~show_type:show_type t)
+          (String.concat "," (List.map (string_of ~show_type:show_type) ts))
+    | Ctor(re) -> RA.string_of_elt ~show_type:show_type re
     | Var(x) -> x
     | Bottom -> "_|_"
 

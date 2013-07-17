@@ -5,7 +5,7 @@ module type S = sig
 
   val order : t -> int
 
-  val string_of_elt : elt -> string
+  val string_of_elt : ?show_type:bool -> elt -> string
 
   val string_of : t -> string
 
@@ -22,9 +22,14 @@ struct
   let order ra =
     fold (fun (elt,tpe) ack -> max ack (Type.order tpe)) ra (-1)
 
-  let string_of_elt (elt,tpe) = Printf.sprintf "%s:%s"
-                                  (Elt.string_of elt)
-                                  (Type.string_of tpe)
+  let string_of_elt ?(show_type=true) (elt,tpe) =
+    if show_type then 
+      Printf.sprintf "%s:%s"
+        (Elt.string_of elt)
+        (Type.string_of tpe)
+    else
+      (Elt.string_of elt)
+
   let string_of ra =
     let io = BatIO.output_string () in
       print

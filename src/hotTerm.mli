@@ -117,10 +117,10 @@ module type S = sig
   end
 
   (** Returns a human-readable representation of the given term.
-    If parameter sort is set to true, then sorts are printed with
+    If parameter show_type is set to true, then types are printed with
     all ctors. Default is false.
     *)
-  val string_of : ?sort:bool -> t -> string
+  val string_of : ?show_type:bool -> t -> string
 
   (** Eta reduction of the given term. *)
   val eta_reduce : t -> t
@@ -189,7 +189,7 @@ sig
     end
   end
 
-  val string_of : ?sort:bool -> t -> string  
+  val string_of : ?show_type:bool -> t -> string  
   val eta_reduce : t -> t
   val subst : string -> t -> t -> t
   val is_welldefined : t -> bool

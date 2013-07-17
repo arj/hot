@@ -19,8 +19,11 @@ module type S =
     (** The maximum order of the elements of the ranked alphabet. O(n). *)
     val order : t -> int
 
-    (** String representation of a single element. *)
-    val string_of_elt : elt -> string
+    (** String representation of a single element.
+      The default value of the optional parameter show_type is true.
+      It describes whether the type is printed.
+    *)
+    val string_of_elt : ?show_type:bool -> elt -> string
 
     (** String representation of the entire alphabet. *)
     val string_of : t -> string
@@ -46,7 +49,7 @@ module Make :
       val order : t -> int
 
       (** Prints a string representation of a ranked element. *)
-      val string_of_elt : elt -> string
+      val string_of_elt : ?show_type:bool -> elt -> string
 
       (** Prints a string representation of the ranked alphabet.
         Details are implementation specific. *)
