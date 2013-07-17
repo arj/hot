@@ -32,6 +32,11 @@ module Make = functor(ABasetype : BASETYPE) -> struct
 
   let rec string_of s = match s with
     | Base(b) -> ABasetype.string_of b
+    | Arrow(Base(b),t2) ->
+        Printf.sprintf
+          "%s -> %s"
+          (ABasetype.string_of b)
+          (string_of t2)
     | Arrow(t1,t2) ->
         Printf.sprintf
           "(%s -> %s)"
