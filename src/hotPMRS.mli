@@ -21,6 +21,7 @@ module type S = sig
   (** The type of the ranked alphabet used for the nonterminal symbols. *)
   type nonterminals
 
+  (** The type of a term used on the rhs of a PMRS rule. *)
   type term
 
   (** The type of the HORS. *)
