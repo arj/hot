@@ -20,3 +20,10 @@ type nonterminal = StringRankedAlphabet.elt and
 type nonterminals = StringRankedAlphabet.t and
 type term = StringSortTerm.t and
 type Rules.elt = StringRankedAlphabet.elt * string list * StringSortTerm.t option * StringSortTerm.t
+
+(** The SimpleState module represents a state which is
+  represented as a simple string. *)
+module SimpleState : HotState.S with type t = string
+
+(** A state represented by a path. *)
+(*module PathState : HotState.S with type t = string * RtaTerm.Path.t*)

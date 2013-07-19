@@ -35,6 +35,8 @@ SOURCES = \
 		  hotRankedAlphabet.ml \
 		  hotPMRS.mli \
 		  hotPMRS.ml \
+		  hotState.mli \
+		  hotState.ml \
 		  hotSimple.mli \
 		  hotSimple.ml \
 #		  hotHORS.mli \
