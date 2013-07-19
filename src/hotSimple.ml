@@ -37,3 +37,6 @@ module SimpleState : HotState.S with type t = string =
   let append (pre,p1) p2 =
       (pre, RtaTerm.Path.append p1 p2)
 end*)
+
+module SimpleStateSet = HotStateSet.Make(SimpleState)
+(*module PathStateSet = Make(RtaState.PathState)*)

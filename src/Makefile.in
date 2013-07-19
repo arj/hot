@@ -37,6 +37,8 @@ SOURCES = \
 		  hotPMRS.ml \
 		  hotState.mli \
 		  hotState.ml \
+		  hotStateSet.mli \
+		  hotStateSet.ml \
 		  hotSimple.mli \
 		  hotSimple.ml \
 #		  hotHORS.mli \
