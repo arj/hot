@@ -43,6 +43,8 @@ SOURCES = \
 		  hotTransition.ml \
 		  hotSimple.mli \
 		  hotSimple.ml \
+		  hotCARTA.mli \
+		  hotCARTA.ml \
 #		  hotHORS.mli \
 #		  hotHORS.ml \
 
