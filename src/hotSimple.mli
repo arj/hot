@@ -30,7 +30,4 @@ module SimpleState : HotState.S with type t = string
 
 (** A simple CARTA. *)
 module SimpleCARTA : HotCARTA.S
-          with type state = SimpleState.t
-          and type States.elt = SimpleState.t
-          and type RankedAlphabet.elt = HotHelper.HotExtBatString.t *
-                                        HotType.Sort.t
+with type RankedAlphabet.elt = HotHelper.HotExtBatString.t * HotType.Sort.t

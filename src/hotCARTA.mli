@@ -12,11 +12,11 @@ module type S = sig
   (** Terms created from the ranked alphabet. These are used in the rule. *)
   module Term : HotTerm.S
 
-  (** A set of states create from the state representation. *)
-  module States : HotExtBatSet.S
-
   (** Type of a state *)
-  type state
+  type state = string * Term.Path.t
+
+  (** A set of states create from the state representation. *)
+  module States : HotExtBatSet.S with type elt = state
 
   (** A transition rule consists of a current state, an input term,
     a path to the current symbol and a list of resulting states. *)
@@ -36,9 +36,6 @@ end
 
 (** Create an instance of a CARTA using a state representation
   and a ranked alphabet representation. *)
-module Make : functor (State : HotState.S) ->
-    functor (Elt : HotInterfaces.ORDEREDPRINTABLE) -> 
+module Make : functor (Elt : HotInterfaces.ORDEREDPRINTABLE) -> 
       functor (Type : HotType.S) -> S
-          with type state = State.t
-          and type States.elt = State.t
-          and type RankedAlphabet.elt = Elt.t * Type.t
+         with type RankedAlphabet.elt = Elt.t * Type.t
