@@ -1,3 +1,5 @@
+open Batteries
+
 module type S = sig
 
   type state
@@ -41,5 +43,13 @@ struct
     q = q;
   }
 
-  let string_of c = "Not implemented yet"
+  let string_of carta =
+      let s_string = RA.string_of carta.s  in
+      let qs_string = String.concat "," @@ List.map State.string_of carta.qs in
+      let q_string = State.string_of carta.q in
+        Printf.sprintf "<%s,%s,\n%s,\n%s>"
+          s_string
+          qs_string
+          "Not implemented yet"
+          q_string
 end
