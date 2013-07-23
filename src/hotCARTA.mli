@@ -6,17 +6,21 @@
 (** Signature of a CARTA. *)
 module type S = sig
 
+  (** The ranked alphabet used for the input symbols. *)
+  module RankedAlphabet : HotRankedAlphabet.S
+
+  (** Terms created from the ranked alphabet. These are used in the rule. *)
+  module Term : HotTerm.S
+
+  (** A set of states create from the state representation. *)
+  module States : HotExtBatSet.S
+
   (** Type of a state *)
   type state
 
-  (** Type of an input symbol *)
-  type symbol
-
-  (** Type of the input alphabet *)
-  type alphabet
-
-  (** Type of a rule. *)
-  type rule
+  (** A transition rule consists of a current state, an input term,
+    a path to the current symbol and a list of resulting states. *)
+  type rule = state * Term.t * Term.Path.t * state list
 
   (** Internal type of the CARTA *)
   type t
@@ -24,7 +28,7 @@ module type S = sig
   (** Create a new automaton based on a set of states,
     a ranked alphabet of input symbols, a set of transition rules
     and an initial state. *)
-  val create : alphabet -> state list -> rule list -> state -> t
+  val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
 
   (** String representation of the current CARTA. *)
   val string_of : t -> string
@@ -33,7 +37,8 @@ end
 (** Create an instance of a CARTA using a state representation
   and a ranked alphabet representation. *)
 module Make : functor (State : HotState.S) ->
-  functor(RA : HotRankedAlphabet.S) -> S
+    functor (Elt : HotInterfaces.ORDEREDPRINTABLE) -> 
+      functor (Type : HotType.S) -> S
           with type state = State.t
-          and type symbol = RA.elt
-          and type alphabet = RA.t
+          and type States.elt = State.t
+          and type RankedAlphabet.elt = Elt.t * Type.t
