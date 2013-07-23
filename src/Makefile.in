@@ -41,10 +41,10 @@ SOURCES = \
 		  hotStateSet.ml \
 		  hotTransition.mli \
 		  hotTransition.ml \
-		  hotSimple.mli \
-		  hotSimple.ml \
 		  hotCARTA.mli \
 		  hotCARTA.ml \
+		  hotSimple.mli \
+		  hotSimple.ml \
 #		  hotHORS.mli \
 #		  hotHORS.ml \
 
