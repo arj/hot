@@ -40,3 +40,5 @@ end*)
 
 module SimpleStateSet = HotStateSet.Make(SimpleState)
 (*module PathStateSet = Make(RtaState.PathState)*)
+
+module SimpleCARTA = HotCARTA.Make(SimpleState)(StringRankedAlphabet)

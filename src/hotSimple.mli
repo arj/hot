@@ -27,3 +27,9 @@ module SimpleState : HotState.S with type t = string
 
 (** A state represented by a path. *)
 (*module PathState : HotState.S with type t = string * RtaTerm.Path.t*)
+
+(** A simple CARTA. *)
+module SimpleCARTA : HotCARTA.S
+          with type state = SimpleState.t
+          and type symbol = StringRankedAlphabet.elt
+          and type alphabet = StringRankedAlphabet.t
