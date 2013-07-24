@@ -50,7 +50,10 @@ struct
   }
 
   let string_of_state (prefix, path) =
-    Printf.sprintf "q_%s:%s" prefix @@ Term.Path.string_of path
+    if path = Term.Path.epsilon then
+      Printf.sprintf "q_%s" prefix
+    else
+      Printf.sprintf "q_%s:%s" prefix @@ Term.Path.string_of path
 
   let string_of_rule (q,t,p,qs) =
     let q_string = string_of_state q in
