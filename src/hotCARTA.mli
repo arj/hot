@@ -39,3 +39,4 @@ end
 module Make : functor (Elt : HotInterfaces.ORDEREDPRINTABLE) -> 
       functor (Type : HotType.S) -> S
          with type RankedAlphabet.elt = Elt.t * Type.t
+         and type Term.re = Elt.t * Type.t
