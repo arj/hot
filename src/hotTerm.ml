@@ -53,6 +53,7 @@ module type S = sig
   val subst : string -> t -> t -> t
   val is_welldefined : t -> bool
   val depth : t -> int
+  val compare : t -> t -> int
 end
 
 module Make = functor (RA : HotRankedAlphabet.S) -> struct
@@ -217,4 +218,6 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
         let depths = List.map depth ts in
           List.max (0 :: depths) + 1
     | Ctor(_) -> failwith "May not occur"
+
+  let compare = compare
 end

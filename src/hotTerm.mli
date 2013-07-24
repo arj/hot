@@ -146,6 +146,9 @@ module type S = sig
     Atoms like [Bottom] and [Var] have depth 0.
     *)
   val depth : t -> int
+
+  (** Compares two terms. *)
+  val compare : t -> t -> int
 end
 
 module Make :
@@ -194,5 +197,5 @@ sig
   val subst : string -> t -> t -> t
   val is_welldefined : t -> bool
   val depth : t -> int
-
+  val compare : t -> t -> int
 end
