@@ -90,7 +90,8 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
         match p with
           | Empty when epsilon -> "{epsilon}"
           | _ ->
-              let f (c,i) = Printf.sprintf "%s.%i" (RA.string_of_elt c) i in
+              let f (c,i) = Printf.sprintf "%s.%i" (RA.string_of_elt
+                                                      ~show_type:false c) i in
               let ps = BatList.map f (string_of' p) in
                 String.concat "." ps
 

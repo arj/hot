@@ -57,7 +57,7 @@ struct
 
   let string_of_rule (q,t,p,qs) =
     let q_string = string_of_state q in
-    let t_string = Term.string_of t in
+    let t_string = Term.string_of ~show_type:false t in
     let p_string = Term.Path.string_of p in
     let qs_string = String.concat " " @@ List.map string_of_state qs in
       Printf.sprintf "(%s,%s,%s) -> %s"
@@ -73,7 +73,7 @@ struct
           States.print ~sep:(",")
             (fun out s -> BatIO.nwrite out (string_of_state s)) io carta.qs;
           BatIO.close_out io in
-      let r_string = "" in
+      let r_string = BatString.concat "\n" @@ BatList.map string_of_rule carta.rules in
       let q_string = string_of_state carta.q in
         Printf.sprintf "<%s,%s,\n%s,\n%s>"
           s_string
