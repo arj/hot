@@ -10,13 +10,21 @@ module type S = sig
 
   module States : HotExtBatSet.S with type elt = state
 
-  type rule = state * Term.t * Term.Path.t * state list
+  type state_t =
+    | SDrain
+    | SStates of state list
+
+  type rule = state * Term.t * Term.Path.t * state_t
 
   type t
 
   val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
 
   val string_of : t -> string
+
+  val mkDrain : state_t
+
+  val mkStates : state list -> state_t
 end
 
 (*TODO Abstract to general tree automaton? *)
@@ -32,8 +40,11 @@ struct
 
   module States = HotExtBatSet.Make(struct type t = state let compare = compare
                                     end)
+  type state_t =
+    | SDrain
+    | SStates of state list
 
-  type rule = state * Term.t * Term.Path.t * state list
+  type rule = state * Term.t * Term.Path.t * state_t
 
     type t = {
       s : RankedAlphabet.t;
@@ -59,7 +70,11 @@ struct
     let q_string = string_of_state q in
     let t_string = Term.string_of ~show_type:false t in
     let p_string = Term.Path.string_of p in
-    let qs_string = String.concat " " @@ List.map string_of_state qs in
+    let qs_string = match qs with
+      | SDrain -> "*"
+      | SStates(qs') -> Printf.sprintf "(%s)" @@
+                        String.concat " " @@ List.map string_of_state qs'
+    in
       Printf.sprintf "(%s,%s,%s) -> %s"
         q_string
         t_string
@@ -80,4 +95,7 @@ struct
           qs_string
           r_string
           q_string
+
+  let mkDrain = SDrain
+  let mkStates qs = SStates(qs)
 end

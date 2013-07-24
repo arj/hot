@@ -18,9 +18,15 @@ module type S = sig
   (** A set of states create from the state representation. *)
   module States : HotExtBatSet.S with type elt = state
 
+  (** Distinguishes between drain states or normal
+    resulting states. *)
+  type state_t =
+    | SDrain
+    | SStates of state list
+
   (** A transition rule consists of a current state, an input term,
     a path to the current symbol and a list of resulting states. *)
-  type rule = state * Term.t * Term.Path.t * state list
+  type rule = state * Term.t * Term.Path.t * state_t
 
   (** Internal type of the CARTA *)
   type t
@@ -32,6 +38,12 @@ module type S = sig
 
   (** String representation of the current CARTA. *)
   val string_of : t -> string
+
+  (** Creates a drain for the transition. *)
+  val mkDrain : state_t
+
+  (** Creates simple transition goal states. *)
+  val mkStates : state list -> state_t
 end
 
 (** Create an instance of a CARTA using a state representation
