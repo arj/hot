@@ -36,6 +36,9 @@ module type S = sig
     and an initial state. *)
   val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
 
+  (** Returns a string representation of a given state. *)
+  val string_of_state : state -> string
+
   (** String representation of the current CARTA. *)
   val string_of : t -> string
 

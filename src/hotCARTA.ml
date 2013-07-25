@@ -20,6 +20,8 @@ module type S = sig
 
   val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
 
+  val string_of_state : state -> string
+
   val string_of : t -> string
 
   val mkDrain : state_t
