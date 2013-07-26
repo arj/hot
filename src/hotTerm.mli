@@ -149,6 +149,9 @@ module type S = sig
 
   (** Compares two terms. *)
   val compare : t -> t -> int
+
+  (** Extracts the paths to all variables that occur in the given term. *)
+  val vars : t -> (string * Path.t) list
 end
 
 module Make :
@@ -198,4 +201,5 @@ sig
   val is_welldefined : t -> bool
   val depth : t -> int
   val compare : t -> t -> int
+  val vars : t -> (string * Path.t) list
 end

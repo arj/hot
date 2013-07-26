@@ -1,4 +1,5 @@
 open Batteries
+open BatEnum.Infix
 
 exception Path_not_found_in_term
 
@@ -54,6 +55,7 @@ module type S = sig
   val is_welldefined : t -> bool
   val depth : t -> int
   val compare : t -> t -> int
+  val vars : t -> (string * Path.t) list
 end
 
 module Make = functor (RA : HotRankedAlphabet.S) -> struct
@@ -220,4 +222,17 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | Ctor(_) -> failwith "May not occur"
 
   let compare = compare
+
+  let vars term =
+    let rec vars' p term = match term with
+      | App(Ctor(s),ts) ->
+          let p' i = Path.append p @@ Path.Ele(s,i,Path.Empty) in
+          let is = BatList.of_enum @@ 0 --^ List.length ts in
+          List.concat @@ List.map (fun (v,i) -> vars' (p' i) v) @@ List.combine ts is
+      | App(_,_) -> failwith @@ "Not supported " ^ string_of term
+      | Ctor(_) -> []
+      | Var(x) -> [(x,p)]
+      | Bottom -> []
+    in
+      vars' Path.Empty term
 end
