@@ -21,6 +21,7 @@ module type S = sig
   type t
 
   val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
+  val get_transition : t -> state -> rule list
 
   val string_of_state : state -> string
 
@@ -68,6 +69,9 @@ struct
     rules = rules;
     q = q;
   }
+
+  let get_transition carta state =
+    List.filter (fun (q,_,_,_) -> q == state) carta.rules
 
   let string_of_state_internal (prefix, path) =
     if path = Term.Path.epsilon then
