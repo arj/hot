@@ -13,7 +13,9 @@ module type S = sig
   module Term : HotTerm.S
 
   (** Type of a state *)
-  type state = string * Term.Path.t
+  type state =
+    | SSingle of string * Term.Path.t
+    | SMultiple of (string * Term.Path.t) list
 
   (** A set of states create from the state representation. *)
   module States : HotExtBatSet.S with type elt = state
