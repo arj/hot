@@ -29,6 +29,9 @@ module type S = sig
   val mkDrain : state_t
 
   val mkStates : state list -> state_t
+  val mkSingleState : (string * Term.Path.t) -> state
+  val mkMultipleState : (string * Term.Path.t) list -> state
+  val mkMultipleStateFromSingleList : state list -> state
 end
 
 (*TODO Abstract to general tree automaton? *)
@@ -110,4 +113,13 @@ struct
 
   let mkDrain = SDrain
   let mkStates qs = SStates(qs)
+
+  let mkSingleState (prefix,path) = SSingle(prefix,path)
+  let mkMultipleState states = SMultiple(states)
+  let mkMultipleStateFromSingleList ss =
+    let extract state = match state with
+      | SSingle(prefix,path) -> (prefix,path)
+      | SMultiple(_) -> failwith "Expected single state but got multiple."
+    in
+      mkMultipleState @@ BatList.map extract ss
 end

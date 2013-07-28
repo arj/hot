@@ -49,6 +49,15 @@ module type S = sig
 
   (** Creates simple transition goal states. *)
   val mkStates : state list -> state_t
+
+  (** Create a simple single state. *)
+  val mkSingleState : (string * Term.Path.t) -> state
+
+  (** Create a state as a union of several states. *)
+  val mkMultipleState : (string * Term.Path.t) list -> state
+
+  (** Creates a multiple state from a list of single ones. *)
+  val mkMultipleStateFromSingleList : state list -> state
 end
 
 (** Create an instance of a CARTA using a state representation
