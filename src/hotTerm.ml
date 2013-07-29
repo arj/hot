@@ -194,11 +194,12 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | _ as t -> t
 
   let rec subst x newterm c = match c with
-    | App(t,ts) -> eta_reduce (App(subst x newterm t, List.map (subst x newterm) ts))
+(*    | App(t,ts) -> eta_reduce (App(subst x newterm t, List.map (subst x newterm) ts))*)
+    | App(t,ts) -> mkApp (subst x newterm t) (List.map (subst x newterm) ts)
     | Var(y) when x = y -> newterm 
-    | Var(_)
-    | Ctor(_)
-    | Bottom -> c
+    | Var(y) -> Var(y)
+    | Ctor(c) -> Ctor(c)
+    | Bottom -> Bottom
 
   let rec is_welldefined_list ts = List.fold_right (fun t ack -> ack && is_welldefined t) ts true
 
