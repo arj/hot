@@ -152,8 +152,12 @@ module type S = sig
 
   (** Extracts the paths to all variables that occur in the given term. *)
   val vars : t -> (string * Path.t) list
+
+  (** Unify two given terms if possible. *)
+  val unify : t -> t -> (string * t) list
 end
 
+(* TODO Write this using S! *)
 module Make :
   functor (RA : HotRankedAlphabet.S) ->
 sig
@@ -202,4 +206,5 @@ sig
   val depth : t -> int
   val compare : t -> t -> int
   val vars : t -> (string * Path.t) list
+  val unify : t -> t -> (string * t) list
 end

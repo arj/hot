@@ -56,6 +56,7 @@ module type S = sig
   val depth : t -> int
   val compare : t -> t -> int
   val vars : t -> (string * Path.t) list
+  val unify : t -> t -> (string * t) list
 end
 
 module Make = functor (RA : HotRankedAlphabet.S) -> struct
@@ -236,4 +237,13 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
       | Bottom -> []
     in
       vars' Path.Empty term
+
+  let rec unify t1 t2 = match t1,t2 with
+    | App(t,ts),App(t',ts') ->
+        unify t t' @ BatList.concat @@ BatList.map2 unify ts ts'
+    | Ctor(c),Ctor(c') when c = c' -> []
+    | Bottom,Bottom -> []
+    | Var(x),_ -> [(x,t2)]
+    | _,Var(x) -> [(x,t1)]
+    | _,_ -> failwith "Not unifiable" (* TODO error handling? *)
 end
