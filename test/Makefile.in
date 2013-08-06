@@ -62,12 +62,16 @@ RESULT  = higherOrderToolsTest
 # generate type information (.annot files)
 ANNOTATE = yes
 
+bisect-report: test
+	bisect-report -html report *.out
+
 # make target (see manual) : byte-code, debug-code, native-code, ...
 test: debug-code
 	./higherOrderToolsTest
 
 YFLAGS = -v
 
-PACKS = batteries,oUnit
+PACKS = batteries,oUnit,bisect
+OCAMLFLAGS=-syntax camlp4o
 
 -include OCamlMakefile
