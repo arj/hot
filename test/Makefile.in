@@ -23,21 +23,37 @@ OCAMLDOCFLAGS = @OCAMLDOCFLAGS@
 
 # put here the names of your source files (in the right order)
 SOURCES = \
-	../src/hotInterfaces.mli \
-	../src/hotTypes.ml \
-	../src/hotExtBatSet.ml \
-	../src/hotPath.ml \
-	../src/hotTerm.ml \
-	../src/hotRankedAlphabet.ml \
-	../src/hotHORS.ml \
+		 ../src/hotExtBatSet.mli \
+		 ../src/hotExtBatSet.ml \
+		 ../src/hotInterfaces.mli \
+		 ../src/hotHelper.ml \
+		 ../src/hotType.mli \
+		 ../src/hotType.ml \
+		 ../src/hotTerm.mli \
+		 ../src/hotTerm.ml \
+		 ../src/hotRankedAlphabet.mli \
+		 ../src/hotRankedAlphabet.ml \
+		 ../src/hotPMRS.mli \
+		 ../src/hotPMRS.ml \
+		 ../src/hotState.mli \
+		 ../src/hotState.ml \
+		 ../src/hotStateSet.mli \
+		 ../src/hotStateSet.ml \
+		 ../src/hotTransition.mli \
+		 ../src/hotTransition.ml \
+		 ../src/hotCARTA.mli \
+		 ../src/hotCARTA.ml \
+		 ../src/hotSimple.mli \
+		 ../src/hotSimple.ml \
 	test.ml \
-	testHotTypes.ml \
-	testHotExtBatSet.ml \
-	testHotPath.ml \
-	testHotTerm.ml \
-	testHotRankedAlphabet.ml \
-	testHotHORS.ml \
+	testHotType.ml \
 	testMain.ml
+
+#	testHotExtBatSet.ml \
+#	testHotPath.ml \
+#	testHotTerm.ml \
+#	testHotRankedAlphabet.ml \
+#	testHotHORS.ml 
 
 # the name of the resulting executable
 RESULT  = higherOrderToolsTest

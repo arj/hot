@@ -1,8 +1,11 @@
-(** Test module for HotTypes. *)
+(** Test module for HotType. *)
 
 open Test
+open Batteries
 
-module Sort = HotTypes.Sort
+module Sort = HotType.Sort
+
+open Sort.Infix
 
 let test_order_1 () =
   let out = Sort.order Sort.base in
@@ -89,17 +92,22 @@ let test_create_n_3 () =
 let test_string_of_1 () =
   let out = Sort.string_of (Sort.base) in
   let exp = "o" in
-    assert_equal exp out
+    assert_equal ~printer:identity exp out
 
 let test_string_of_2 () =
-  let out = Sort.string_of (Sort.Arrow(Sort.base,Sort.Arrow(Sort.base,Sort.base))) in
+  let out = Sort.string_of (o ^=> o ^=> o) in
   let exp = "(o -> (o -> o))" in
-    assert_equal exp out
+    assert_equal ~printer:identity exp out
 
 let test_string_of_3 () =
-  let out = Sort.string_of (Sort.Arrow(Sort.Arrow(Sort.base,Sort.base),Sort.base)) in
+  let out = Sort.string_of ((o ^=> o) ^=> o) in
   let exp = "((o -> o) -> o)" in
-    assert_equal exp out
+    assert_equal ~printer:identity exp out
+
+let test_string_of_4 () =
+  let out = Sort.string_of ((o ^=> (o ^=> o ^=> o)) ^=> o) in
+  let exp = "((o -> (o -> (o -> o))) -> o)" in
+    assert_equal ~printer:identity exp out
 
 let init_tests () =
   [
@@ -121,6 +129,7 @@ let init_tests () =
    ("string_of 1", test_string_of_1);
    ("string_of 2", test_string_of_2);
    ("string_of 3", test_string_of_3);
+   ("string_of 4", test_string_of_4);
   ]
 
 let _ = install_tests_new "HotType" init_tests
