@@ -154,7 +154,7 @@ module type S = sig
   val vars : t -> (string * Path.t) list
 
   (** Unify two given terms if possible. *)
-  val unify : t -> t -> (string * t) list
+  val unify : t -> t -> ((string * t) list, unit) BatResult.t 
 end
 
 (* TODO Write this using S! *)
@@ -206,5 +206,5 @@ sig
   val depth : t -> int
   val compare : t -> t -> int
   val vars : t -> (string * Path.t) list
-  val unify : t -> t -> (string * t) list
+  val unify : t -> t -> ((string * t) list, unit) BatResult.t 
 end

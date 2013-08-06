@@ -56,7 +56,7 @@ module type S = sig
   val depth : t -> int
   val compare : t -> t -> int
   val vars : t -> (string * Path.t) list
-  val unify : t -> t -> (string * t) list
+  val unify : t -> t -> ((string * t) list, unit) BatResult.t 
 end
 
 module Make = functor (RA : HotRankedAlphabet.S) -> struct
@@ -238,12 +238,26 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     in
       vars' Path.Empty term
 
-  let rec unify t1 t2 = match t1,t2 with
+  open BatResult.Monad
+
+  (* TODO Use proper monads, but the Batteries' Monads are unusable *)
+  let rec unify t1 t2 : ((string * t) list, unit) BatResult.t = match t1,t2 with
     | App(t,ts),App(t',ts') ->
-        unify t t' @ BatList.concat @@ BatList.map2 unify ts ts'
-    | Ctor(c),Ctor(c') when c = c' -> []
-    | Bottom,Bottom -> []
-    | Var(x),_ -> [(x,t2)]
-    | _,Var(x) -> [(x,t1)]
-    | _,_ -> failwith "Not unifiable" (* TODO error handling? *)
+        begin
+        match unify t t' with
+          | Ok(u1) ->
+              let inner = BatList.map2 unify ts ts' in
+              let f ack e = match ack,e with
+                | Ok(lack), Ok(lst) -> return @@ lst @ lack
+                | Bad(t), _ -> Bad(t)
+                | _,Bad(t) -> Bad(t)
+              in
+                BatList.fold_left f (Ok(u1)) inner
+          | Bad(b) -> Bad(b)
+        end
+    | Ctor(c),Ctor(c') when c = c' -> return []
+    | Bottom,Bottom -> return []
+    | Var(x),_ -> return [(x,t2)]
+    | _,Var(x) -> return [(x,t1)]
+    | _,_ -> return []
 end
