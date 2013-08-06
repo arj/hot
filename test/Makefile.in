@@ -74,4 +74,6 @@ YFLAGS = -v
 PACKS = batteries,oUnit,bisect
 OCAMLFLAGS=-syntax camlp4o
 
+TRASH=bisect*.out
+
 -include OCamlMakefile
