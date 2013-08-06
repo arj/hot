@@ -303,6 +303,40 @@ let test_depth_app_app_bottom () =
   let out = depth (mkApp (mkCtor ("b",o)) [mkBottom;mkApp (mkCtor ("b",o)) [mkBottom]]) in
     assert_equal ~printer:(string_of_int) exp out
 
+(* unify *)
+
+let ures_pr res = match res with
+  | Ok(lst) ->
+      let envp (x,t) = Printf.sprintf "%s -> %s" x (string_of t) in
+      let s = String.concat "," @@ BatList.map envp lst in
+        Printf.sprintf "[%s]" s
+  | Bad(_) -> "Bad"
+
+let test_unify_ctor_ctor () =
+  let exp = Ok([]) in
+  let out = unify (mkCtor c1) (mkCtor c1) in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_ctor_var () =
+  let exp = Ok([("x",mkCtor c1)]) in
+  let out = unify (mkCtor c1) (mkVar "x") in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_var_ctor () =
+  let exp = Ok([("x",mkCtor c1)]) in
+  let out = unify (mkVar "x") (mkCtor c1) in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_bottom_bottom () =
+  let exp = Ok([]) in
+  let out = unify mkBottom mkBottom in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_bottom_ctor () =
+  let exp = Bad(()) in
+  let out = unify mkBottom @@ mkCtor c1 in
+    assert_equal ~printer:ures_pr exp out
+
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
   [
@@ -360,6 +394,11 @@ let init_tests () =
    ("depth app", test_depth_app);
    ("depth app bottom", test_depth_app_bottom);
    ("depth app bottom (app bottom)", test_depth_app_app_bottom);
+   ("unify ctor,ctor", test_unify_ctor_ctor);
+   ("unify ctor,var", test_unify_ctor_var);
+   ("unify var,ctor", test_unify_var_ctor);
+   ("unify bottom,bottom", test_unify_bottom_bottom);
+   ("unify bottom,ctor", test_unify_bottom_ctor);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests
