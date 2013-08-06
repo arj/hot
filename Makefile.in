@@ -34,6 +34,6 @@ dist:
 	echo "Wrote ../$(PROGNAME)-$(VERSION).tar.gz"
 
 test:
-	$(MAKE) -C test $@
+	$(MAKE) -C test
 
 .PHONY: dist doc test
