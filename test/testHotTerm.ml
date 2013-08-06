@@ -1,292 +1,306 @@
 (** Test module for HotTerm. *)
 
-open Test
-open HotTerm.SortTerm
-open HotTerm.SortTerm.Infix
+open Batteries
 
-module Sort = HotTypes.Sort
-open HotTypes.Sort.Infix
+open Test
+open HotSimple.StringSortTerm
+module HotPath = Path
+open Path.Infix
+
+module Sort = HotType.Sort
+open Sort.Infix
 
 let prnt p =
   let p' = BatOption.map (HotPath.string_of) p in
     BatOption.default "{None}" p'
 
+
+let c0 = ("C", Sort.create_n 0)
+let c1 = ("C", Sort.create_n 1)
+let c2 = ("C", Sort.create_n 2)
+let b1 = ("B", Sort.create_n 1)
+let d1 = ("D", Sort.create_n 1)
+
 (* path *)
 
 let test_path_1 () =
   let exp = None in
-  let out = path (Var("y")) "x" in
+  let out = Path.path (mkVar "y") "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_2 () =
   let exp = Some HotPath.epsilon in
-  let out = path (Var("x")) "x" in
+  let out = Path.path (mkVar "x") "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_3 () =
   let exp = None in
-  let out = path (App(Ctor("C",Sort.create_n 1), [Var("y")])) "x" in
+  let out = Path.path (mkApp (mkCtor ("C",Sort.create_n 1)) [mkVar "y"]) "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_4 () =
-  let exp = Some(HotPath.Ele("C",0,HotPath.Empty)) in
-  let out = path (App(Ctor("C",Sort.create_n 1), [Var("x")])) "x" in
+  let exp = Some(HotPath.Ele(c1,0,HotPath.Empty)) in
+  let out = Path.path (mkApp (mkCtor c1) [mkVar "x"]) "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_5 () =
-  let exp = Some(HotPath.Ele("C",0,HotPath.Ele("C",1,HotPath.Empty))) in
-  let out = path (App(Ctor("C",Sort.create_n 1),
-                       [(App(Ctor("C",Sort.create_n 1),
-                              [(App(Ctor("C",Sort.create_n 1), [Var("y")]));
-                               Var("x")]))])) "x" in
+  let exp = Some(HotPath.Ele(c1, 0,HotPath.Ele(c1,1,HotPath.Empty))) in
+  let out = Path.path (mkApp (mkCtor c1)
+                       [mkApp (mkCtor c1)
+                              [mkApp (mkCtor c1) [mkVar "y"];
+                               mkVar "x"]]) "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_bottom () =
   let exp = None in
-  let out = path Bottom "x" in
+  let out = Path.path mkBottom "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_ctor () =
   let exp = None in
-  let out = path (Ctor("C",Sort.create_n 1)) "x" in
+  let out = Path.path (mkCtor ("C",Sort.create_n 1)) "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_app_var () =
   let exp = Some(HotPath.epsilon) in
-  let out = path (App(Var("x"),[])) "x" in
+  let out = Path.path (mkApp (mkVar "x") []) "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_app_app_app_var () =
   let exp = Some(HotPath.epsilon) in
-  let out = path (App(App(App(Var("x"),[]),[]),[])) "x" in
+  let out = Path.path (mkApp(mkApp(mkApp (mkVar "x") []) []) []) "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_app_bottom () =
   let exp = None in
-  let out = path (App(Bottom,[])) "x" in
+  let out = Path.path (mkApp mkBottom []) "x" in
     assert_equal ~printer:(prnt) exp out
 
 let test_path_app_app () =
   let exp = None in
-  let out = path (App(App(Bottom,[]),[])) "x" in
+  let out = Path.path (mkApp(mkApp mkBottom []) []) "x" in
     assert_equal ~printer:(prnt) exp out
 
 (* subst_path *)
 
 let test_subst_path_1 () =
-  let exp = Var("x") in
-  let out = subst_path HotPath.epsilon (Var("x")) Bottom in
-    assert_equal exp out
+  let exp = mkVar "x" in
+  let out = Path.subst_path HotPath.epsilon (mkVar "x") mkBottom in
+    assert_equal ~printer:string_of exp out
 
 let test_subst_path_2 () =
-  let exp = Var("x") in
-  let out = subst_path HotPath.epsilon (Var("x"))
-              (App(Ctor("C",Sort.create_n 1), [Var("y")])) in
-    assert_equal exp out
+  let exp = mkVar "x" in
+  let out = Path.subst_path HotPath.epsilon (mkVar "x")
+              (mkApp(mkCtor ("C",Sort.create_n 1)) [mkVar "y"]) in
+    assert_equal ~printer:string_of exp out
 
 let test_subst_path_3 () =
-  let exp = Var("x") in
-  let out = subst_path HotPath.epsilon (Var("x"))
-              (Var("y")) in
+  let exp = mkVar "x" in
+  let out = Path.subst_path HotPath.epsilon (mkVar "x")
+              (mkVar "y") in
     assert_equal exp out
 
 let test_subst_path_4 () =
-  let f () = subst_path (HotPath.Ele("C",1,HotPath.epsilon)) Bottom Bottom in
+  let f () = Path.subst_path (HotPath.Ele(("C", Sort.create_n 1),1,HotPath.epsilon)) mkBottom mkBottom in
     assert_raises HotTerm.Path_not_found_in_term f
 
 let test_subst_path_5 () =
-  let f ()  = subst_path (HotPath.Ele("C",1,HotPath.epsilon)) Bottom (Var("x")) in
+  let f ()  = Path.subst_path (HotPath.Ele(("C", Sort.create_n 1),1,HotPath.epsilon)) mkBottom (mkVar "x") in
     assert_raises HotTerm.Path_not_found_in_term f
 
 let test_subst_path_6 () = 
-  let f () = subst_path (HotPath.Ele("C",1,HotPath.epsilon)) Bottom (App(Ctor("A",Sort.create_n 1), [])) in
+  let f () = Path.subst_path (HotPath.Ele(("C",Sort.create_n 1),1,HotPath.epsilon)) mkBottom (mkApp (mkCtor ("A",Sort.create_n 1)) []) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 let test_subst_path_7 () =
-  let exp = App(Ctor("C",Sort.create_n 1),[Bottom]) in
-  let out = subst_path (HotPath.Ele("C",0,HotPath.epsilon)) Bottom (App(Ctor("C",Sort.create_n 1), [Var("x")])) in
+  let exp = mkApp (mkCtor("C",Sort.create_n 1)) [mkBottom] in
+  let out = Path.subst_path (HotPath.Ele(("C", Sort.create_n 1),0,HotPath.epsilon)) mkBottom (mkApp (mkCtor("C",Sort.create_n 1)) [mkVar "x"]) in
     assert_equal ~printer:string_of exp out
 
 let test_subst_path_8 () =
-  let f () = subst_path (HotPath.Ele("C",1,HotPath.epsilon)) Bottom (App(Ctor("C",Sort.create_n 1), [Var("x")])) in
+  let f () = Path.subst_path (HotPath.Ele(("C",Sort.create_n 1), 1,HotPath.epsilon)) mkBottom (mkApp (mkCtor("C",Sort.create_n 1)) [mkVar "x"]) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 let test_subst_path_9 () =
-  let inp = App(Ctor("C",Sort.create_n 3),[Var("x");App(Ctor("D",Sort.create_n 3),[Var("x");Var("t");App(Ctor("C",Sort.create_n 1),[Var("q")])]);Var("y")]) in
-  let exp = App(Ctor("C",Sort.create_n 3),[Var("x");App(Ctor("D",Sort.create_n 3),[Var("x");Var("t");App(Ctor("C",Sort.create_n 1),[Bottom])]);Var("y")]) in
-  let path = HotPath.Ele("C",1,HotPath.Ele("D",2,HotPath.Ele("C",0,HotPath.epsilon))) in
-  let out = subst_path path Bottom inp in
+  let c = ("C",Sort.create_n 3) in
+  let d = ("D",Sort.create_n 3) in
+  let e = ("E",Sort.create_n 1) in
+  let inp = mkApp (mkCtor c) [mkVar "x";mkApp (mkCtor d) [mkVar "x";mkVar "t";mkApp (mkCtor e) [mkVar("q")]];mkVar("y")] in
+  let exp = mkApp (mkCtor c) [mkVar "x";mkApp (mkCtor d) [mkVar "x";mkVar "t";mkApp (mkCtor e) [mkBottom]];mkVar("y")] in
+  let path = HotPath.Ele(c,1,HotPath.Ele(d,2,HotPath.Ele(e,0,HotPath.epsilon))) in
+  let out = Path.subst_path path mkBottom inp in
     assert_equal ~printer:string_of exp out
       
 let test_subst_path_ctor_epsilon () =
-  let exp = Bottom in
-  let out = subst_path HotPath.epsilon Bottom (Ctor("C",o)) in
-    assert_equal exp out
+  let exp = mkBottom in
+  let out = Path.subst_path HotPath.epsilon mkBottom @@ mkCtor ("C",o) in
+    assert_equal ~printer:string_of exp out
 
 (* read *)
 
 let test_read_1 () =
-  let out = read (Var("x")) HotPath.Empty in
-  let exp = Var("x") in
+  let out = Path.read (mkVar "x") HotPath.Empty in
+  let exp = mkVar "x" in
     assert_equal ~printer:string_of exp out
 
 let test_read_2 () =
-  let f () = read (Var("x")) (HotPath.Ele("C",1,HotPath.Empty)) in
+  let f () = Path.read (mkVar "x") (HotPath.Ele(c1,1,HotPath.Empty)) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 let test_read_3 () =
-  let out = read (App(Ctor("C",Sort.create_n 1),[Var("x")])) (HotPath.Ele("C",0,HotPath.Empty)) in
-  let exp = Var("x") in
+  let out = Path.read (mkApp (mkCtor c1) [mkVar "x"]) (HotPath.Ele(c1,0,HotPath.Empty)) in
+  let exp = mkVar "x" in
     assert_equal ~printer:string_of exp out
 
 let test_read_4 () =
-  let f () = read (App(Ctor("C",Sort.create_n 1),[Var("x")])) (HotPath.Ele("C",1,HotPath.Empty)) in
+  let f () = Path.read (mkApp (mkCtor c1) [mkVar "x"]) (HotPath.Ele(c1,1,HotPath.Empty)) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 let test_read_5 () =
-  let f () = read (App(Ctor("D",Sort.create_n 1),[Var("x")])) (HotPath.Ele("C",0,HotPath.Empty)) in
+  let f () = Path.read (mkApp (mkCtor d1) [mkVar "x"]) (HotPath.Ele(c1,0,HotPath.Empty)) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 let test_read_6 () =
-  let out = read (App(Ctor("C",Sort.create_n 1),[Var("y");App(Ctor("D",Sort.create_n 1),[Var("x")])])) (HotPath.Ele("C",0,HotPath.Empty)) in
-  let exp = Var("y") in
+  let out = Path.read (mkApp (mkCtor c1) [mkVar "y"; mkApp (mkCtor c1) [mkVar "x"]]) (HotPath.Ele(c1,0,HotPath.Empty)) in
+  let exp = mkVar "y" in
     assert_equal ~printer:string_of exp out
 
 let test_read_7 () =
-  let out = read (App(Ctor("C",Sort.create_n 2),[Var("y");App(Ctor("D",Sort.create_n 1),[Var("x")])])) (HotPath.Ele("C",1,HotPath.Ele("D",0,HotPath.Empty))) in
-  let exp = Var("x") in
+  let out = Path.read (mkApp (mkCtor c2) [mkVar "y";mkApp (mkCtor d1) [mkVar "x"]]) (HotPath.Ele(c2,1,HotPath.Ele(d1,0,HotPath.Empty))) in
+  let exp = mkVar "x" in
     assert_equal ~printer:string_of exp out
 
+(* TODO Shouldn't the first ctor be a c2? *)
 let test_read_8 () =
-  let f () = read (App(Ctor("C",Sort.create_n 1),[Var("y");App(Ctor("D",Sort.create_n 1),[Var("x")])])) (HotPath.Ele("C",1,HotPath.Ele("D",1,HotPath.Empty))) in
+  let f () = Path.read (mkApp (mkCtor c1) [mkVar "y";mkApp (mkCtor d1) [mkVar "x"]]) (HotPath.Ele(c1,1,HotPath.Ele(d1,1,HotPath.Empty))) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 (* Similar to test_read_8 but with infix syntax *)
 let test_read_9 () =
-  let f () = (App(Ctor("C",Sort.create_n 1),[Var("y");App(Ctor("D",Sort.create_n 1),[Var("x")])])) -. (HotPath.Ele("C",1,HotPath.Ele("D",1,HotPath.Empty))) in
+  let f () = (mkApp (mkCtor c1) [mkVar "y";mkApp (mkCtor d1) [mkVar "x"]]) -. (HotPath.Ele(c1,1,HotPath.Ele(d1,1,HotPath.Empty))) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 (* subst *)
 
 let test_subst_in_var () =
-  let out = subst "x" Bottom (Var("x")) in
-  let exp = Bottom in
+  let out = subst "x" mkBottom (mkVar "x") in
+  let exp = mkBottom in
     assert_equal ~printer:(string_of) exp out
 
 let test_subst_in_ctor () =
-  let out = subst "x" Bottom (App(Ctor("C",Sort.create_n 1), [Var("x")])) in
-  let exp = App(Ctor("C",Sort.create_n 1), [Bottom]) in
+  let out = subst "x" mkBottom (mkApp (mkCtor c1) [mkVar "x"]) in
+  let exp = mkApp (mkCtor c1) [mkBottom] in
     assert_equal ~printer:(string_of) exp out
 
 let test_subst_not_present () = 
-  let out = subst "x" Bottom (App(Ctor("C",Sort.create_n 1), [Var("y")])) in
-  let exp = App(Ctor("C",Sort.create_n 1), [Var("y")]) in
+  let out = subst "x" mkBottom (mkApp (mkCtor c1) [mkVar "y"]) in
+  let exp = mkApp (mkCtor c1) [mkVar "y"] in
     assert_equal ~printer:(string_of) exp out
 
 let test_subst_app_var () =
-  let exp = App(Ctor("b",o ^=> o),[Bottom]) in
-  let out = subst "x" (App(Ctor("b",o ^=> o),[])) (App(Var("x"),[Bottom])) in
-    assert_equal ~printer:(string_of ~sort:true) exp out
+  let exp = mkApp (mkCtor b1) [mkBottom] in
+  let out = subst "x" (mkApp (mkCtor b1) []) (mkApp (mkVar "x") [mkBottom]) in
+    assert_equal ~printer:(string_of ~show_type:true) exp out
 
 (* string_of *)
 
 let test_string_of_bottom () =
-  let out = string_of Bottom in
+  let out = string_of mkBottom in
   let exp = "_|_" in
     assert_equal ~printer:(fun x -> x) exp out
 
 let test_string_of_var () =
-  let out = string_of (Var("x")) in
+  let out = string_of (mkVar "x") in
   let exp = "x" in
     assert_equal ~printer:(fun x -> x) exp out
 
 let test_string_of_ctor () =
-  let out = string_of (App(Ctor("C",Sort.create_n 2), [Var("x");Var("y")])) in
+  let out = string_of (mkApp (mkCtor c2) [mkVar "x";mkVar "y"]) in
   let exp = "C(x,y)" in
     assert_equal ~printer:(fun x -> x) exp out
 
 let test_string_of_nullary_ctor () =
-  let out = string_of (Ctor("C", Sort.create_n 0)) in
+  let out = string_of (mkCtor c0) in
   let exp = "C" in
     assert_equal ~printer:(fun x -> x) exp out
 
 let test_string_of_nullary_ctor_app () =
-  let out = string_of (App(Ctor("C", Sort.create_n 0), [])) in
+  let out = string_of (mkApp (mkCtor c0) []) in
   let exp = "C" in
     assert_equal ~printer:(fun x -> x) exp out
 
 (* welldefined *)
 
 let test_is_welldefined_bottom () =
-  let out = is_welldefined Bottom in
+  let out = is_welldefined mkBottom in
     assert_bool "Term should be well-defined" out
 
 let test_is_welldefined_var () =
-  let out = is_welldefined (Var("x")) in
+  let out = is_welldefined (mkVar "x") in
     assert_bool "Term should be well-defined" out
 
 let test_is_welldefined_ctor_nonterminal () =
-  let out = is_welldefined (Ctor("C",o ^=> o)) in
+  let out = is_welldefined (mkCtor c1) in
     assert_bool "Term should be well-defined" out
 
 let test_is_welldefined_ctor_terminal () =
-  let out = is_welldefined (Ctor("a",o ^=> o)) in
+  let out = is_welldefined (mkCtor ("a",o ^=> o)) in
     assert_bool "Term should be well-defined" out
 
 let test_is_welldefined_app_var_no_args () =
-  let out = is_welldefined (App(Var("x"),[])) in
+  let out = is_welldefined (mkApp (mkVar "x") []) in
     assert_bool "Term should be well-defined" out
 
 let test_is_welldefined_app_var_some_args () =
-  let out = is_welldefined (App(Var("x"),[Var("y");Bottom])) in
+  let out = is_welldefined (mkApp (mkVar "x") [mkVar "y";mkBottom]) in
     assert_bool "Term should be well-defined" out
 
 let test_is_welldefined_app_bottom () =
-  let out = is_welldefined (App(Bottom, [])) in
+  let out = is_welldefined (mkApp mkBottom []) in
     assert_bool "Term should not be well-defined" (not out)
 
 let test_is_welldefined_app_ctor_exact_no_of_args () =
   let out = is_welldefined
-              (App(Ctor("A",o ^=> o ^=> o),
-                        [Var("x");Var("x");Bottom])) in
+              (mkApp (mkCtor ("A",o ^=> o ^=> o))
+                        [mkVar "x"; mkVar "x";mkBottom]) in
     assert_bool "Term should be well-defined" out
 
 let test_is_welldefined_app_ctor_too_many_args () =
-  let out = is_welldefined (App(Ctor("A",o ^=> o ^=> o),
-                                     [Var("x");Var("x");Bottom;Bottom])) in
+  let out = is_welldefined (mkApp (mkCtor ("A",o ^=> o ^=> o))
+                                     [mkVar "x";mkVar "x";mkBottom;mkBottom]) in
     assert_bool "Term should not be well-defined" (not out)
 
 let test_is_welldefined_app_ctor_less_args () =
   let out = is_welldefined
-              (App(Ctor("A",o ^=> o ^=> o),
-                        [Var("x")])) in
+              (mkApp (mkCtor ("A",o ^=> o ^=> o))
+                        [mkVar "x"]) in
     assert_bool "Term should be well-defined" out
 
 (* depth *)
 
 let test_depth_bottom () =
   let exp = 1 in
-  let out = depth Bottom in
+  let out = depth mkBottom in
     assert_equal ~printer:(string_of_int) exp out
 
 let test_depth_var () =
   let exp = 1 in
-  let out = depth (Var("x")) in
+  let out = depth (mkVar "x") in
     assert_equal ~printer:(string_of_int) exp out
 
 let test_depth_app () =
   let exp = 1 in
-  let out = depth (App(Ctor("b",o),[])) in
+  let out = depth (mkApp (mkCtor ("b",o)) []) in
     assert_equal ~printer:(string_of_int) exp out
 
 let test_depth_app_bottom () =
   let exp = 2 in
-  let out = depth (App(Ctor("b",o),[Bottom])) in
+  let out = depth (mkApp (mkCtor ("b",o)) [mkBottom]) in
     assert_equal ~printer:(string_of_int) exp out
 
 let test_depth_app_app_bottom () =
   let exp = 3 in
-  let out = depth (App(Ctor("b",o),[Bottom;App(Ctor("b",o),[Bottom])])) in
+  let out = depth (mkApp (mkCtor ("b",o)) [mkBottom;mkApp (mkCtor ("b",o)) [mkBottom]]) in
     assert_equal ~printer:(string_of_int) exp out
 
 (* TODO Rename tests. Numbered tests are not meaningful... *)

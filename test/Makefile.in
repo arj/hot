@@ -47,6 +47,7 @@ SOURCES = \
 		 ../src/hotSimple.ml \
 	test.ml \
 	testHotType.ml \
+	testHotTerm.ml \
 	testMain.ml
 
 #	testHotExtBatSet.ml \
