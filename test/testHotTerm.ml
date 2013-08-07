@@ -20,6 +20,7 @@ let c1 = ("C", Sort.create_n 1)
 let c2 = ("C", Sort.create_n 2)
 let b1 = ("B", Sort.create_n 1)
 let d1 = ("D", Sort.create_n 1)
+let zero = ("zero",Sort.base)
 
 (* path *)
 
@@ -368,6 +369,16 @@ let test_unify_app_app_snd_bad_2 () =
   let out = unify (mkApp (mkCtor c1) [mkCtor d1;mkCtor d1]) (mkApp (mkCtor c1) [mkCtor c1;mkCtor d1]) in
     assert_equal ~printer:ures_pr exp out
 
+let test_unify_zero_star () =
+  let exp = Ok(["*",mkCtor zero]) in
+  let out = unify (mkCtor zero) @@ mkVar "*" in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_appzero_star () =
+  let exp = Ok(["*",mkCtor zero]) in
+  let out = unify (mkApp (mkCtor zero) []) @@ mkVar "*" in
+    assert_equal ~printer:ures_pr exp out
+
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
   [
@@ -435,6 +446,8 @@ let init_tests () =
    ("unify app,app snd ok", test_unify_app_app_snd_ok);
    ("unify app,app snd bad 1", test_unify_app_app_snd_bad_1);
    ("unify app,app snd bad 2", test_unify_app_app_snd_bad_2);
+   ("unify zero,*", test_unify_zero_star);
+   ("unify (zero) [],*", test_unify_appzero_star);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests

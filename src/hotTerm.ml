@@ -71,7 +71,7 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | App(Ctor(s), []) -> App(Ctor(s),ts)
     | _ -> App(t,ts)
 
-  let mkCtor re = Ctor(re)
+  let mkCtor re = mkApp (Ctor(re)) [] (* They are always wrapped in an app?*)
 
   let mkVar s = Var(s)
 
