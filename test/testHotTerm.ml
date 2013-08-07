@@ -305,11 +305,15 @@ let test_depth_app_app_bottom () =
 
 (* unify *)
 
+let env_pair_pr (x,t) =
+  Printf.sprintf "%s -> %s" x (string_of t)
+
+let env_pr lst =
+  let s = String.concat "," @@ BatList.map env_pair_pr lst in
+    Printf.sprintf "[%s]" s
+
 let ures_pr res = match res with
-  | Ok(lst) ->
-      let envp (x,t) = Printf.sprintf "%s -> %s" x (string_of t) in
-      let s = String.concat "," @@ BatList.map envp lst in
-        Printf.sprintf "[%s]" s
+  | Ok(lst) -> env_pr lst
   | Bad(_) -> "Bad"
 
 let test_unify_ctor_ctor () =
@@ -335,6 +339,33 @@ let test_unify_bottom_bottom () =
 let test_unify_bottom_ctor () =
   let exp = Bad(()) in
   let out = unify mkBottom @@ mkCtor c1 in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_app_app_fst_ok () =
+  let exp = Ok([]) in
+  let out = unify (mkApp (mkCtor c1) []) (mkApp (mkCtor c1) []) in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_app_app_fst_bad () =
+  let exp = Bad(()) in
+  let out = unify (mkApp (mkCtor c1) []) (mkApp (mkCtor c2) []) in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_app_app_snd_ok () =
+  let exp = [("x",mkCtor c1);("y",mkCtor d1)] in
+  let out = unify (mkApp (mkCtor c1) [mkVar "x";mkCtor d1]) (mkApp (mkCtor c1) [mkCtor c1;mkVar "y"]) in
+    match out with
+      | Ok(lst) -> assert_equal_list ~printer:env_pair_pr exp lst
+      | Bad(_) -> assert_failure "Expected Ok but got Bad"
+
+let test_unify_app_app_snd_bad_1 () =
+  let exp = Bad(()) in
+  let out = unify (mkApp (mkCtor c1) [mkVar "x";mkCtor d1]) (mkApp (mkCtor c1) [mkCtor c1;mkCtor c1]) in
+    assert_equal ~printer:ures_pr exp out
+
+let test_unify_app_app_snd_bad_2 () =
+  let exp = Bad(()) in
+  let out = unify (mkApp (mkCtor c1) [mkCtor d1;mkCtor d1]) (mkApp (mkCtor c1) [mkCtor c1;mkCtor d1]) in
     assert_equal ~printer:ures_pr exp out
 
 (* TODO Rename tests. Numbered tests are not meaningful... *)
@@ -399,6 +430,11 @@ let init_tests () =
    ("unify var,ctor", test_unify_var_ctor);
    ("unify bottom,bottom", test_unify_bottom_bottom);
    ("unify bottom,ctor", test_unify_bottom_ctor);
+   ("unify app,app fst ok", test_unify_app_app_fst_ok);
+   ("unify app,app fst bad", test_unify_app_app_fst_bad);
+   ("unify app,app snd ok", test_unify_app_app_snd_ok);
+   ("unify app,app snd bad 1", test_unify_app_app_snd_bad_1);
+   ("unify app,app snd bad 2", test_unify_app_app_snd_bad_2);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests
