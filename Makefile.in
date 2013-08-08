@@ -7,13 +7,12 @@ src/OCamlMakefile
 VERSION = @VERSION@
 
 
-all clean install uninstall update:
+all install uninstall update:
 	$(MAKE) -C src $@
 
 everything: all doc test
 
-distclean: clean
-	$(MAKE) -C examples clean
+clean:
 	$(MAKE) -C test clean
 	rm -rf doc
 
@@ -36,4 +35,4 @@ dist:
 test:
 	$(MAKE) -C test
 
-.PHONY: dist doc test
+.PHONY: dist doc test clean
