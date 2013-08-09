@@ -34,6 +34,8 @@ module type S = sig
   val mkSingleState : (string * Term.Path.t) -> state
   val mkMultipleState : (string * Term.Path.t) list -> state
   val mkMultipleStateFromSingleList : state list -> state
+
+  val state_union : state -> state -> state
 end
 
 (*TODO Abstract to general tree automaton? *)
@@ -127,4 +129,10 @@ struct
       | SMultiple(_) -> failwith "Expected single state but got multiple."
     in
       mkMultipleState @@ BatList.map extract ss
+
+  let state_union q1 q2 = match q1, q2 with
+    | SSingle(f1,p1), SSingle(f2,p2) -> SMultiple([(f1,p1);(f2,p2)])
+    | SMultiple(lst), SSingle(f2,p2) -> SMultiple(BatList.unique @@ (f2,p2) :: lst)
+    | SSingle(f1,p1), SMultiple(lst) -> SMultiple(BatList.unique @@ (f1,p1) :: lst)
+    | SMultiple(lst), SMultiple(lst2) -> SMultiple(BatList.unique @@ lst @ lst2)
 end

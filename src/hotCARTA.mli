@@ -64,6 +64,9 @@ module type S = sig
 
   (** Creates a multiple state from a list of single ones. *)
   val mkMultipleStateFromSingleList : state list -> state
+
+  (** Union of two states, i.e. respects SSingle and SMultiple *)
+  val state_union : state -> state -> state
 end
 
 (** Create an instance of a CARTA using a state representation
