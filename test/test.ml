@@ -14,7 +14,7 @@ let assert_equal_list ?cmp ?printer exp out =
   let out' = BatList.sort c out in
   let comparison = BatList.map2 c exp' out' in
   let txt = "Lists are not equivalent" in
-    if BatList.exists (fun i -> i != 0) comparison then
+    if BatList.exists (fun i -> i <> 0) comparison then
       match printer with
         | Some(p) ->
             let txt_exp = String.concat "," @@ List.map p exp in
