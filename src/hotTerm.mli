@@ -153,7 +153,10 @@ module type S = sig
   (** Extracts the paths to all variables that occur in the given term. *)
   val vars : t -> (string * Path.t) list
 
-  (** Unify two given terms if possible. *)
+  (** Unify two given terms if possible. 
+    Returns either a substitution [Ok(subst)] if unifiable,
+    or [Err(())] if not.
+  *)
   val unify : t -> t -> ((string * t) list, unit) BatResult.t 
 end
 
