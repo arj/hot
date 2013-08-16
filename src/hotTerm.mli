@@ -35,6 +35,9 @@ module type S = sig
   (** Creates the bottom value. *)
   val mkBottom : t
 
+  (** Creates a ctor application directly. *)
+  val mkAppCtor : re -> t list -> t
+
   (** This module provides paths based on the terms just defined.
 
     Typically, a path is given as pairs of constructor and index, i.e.
@@ -175,6 +178,7 @@ sig
   val mkCtor : re -> t
   val mkVar : string -> t
   val mkBottom : t
+  val mkAppCtor : re -> t list -> t
 
   module Path : sig
     type termt = t

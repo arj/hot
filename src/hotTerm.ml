@@ -20,6 +20,8 @@ module type S = sig
 
   val mkBottom : t
 
+  val mkAppCtor : re -> t list -> t
+
   module Path : sig
     type termt = t
     type t =
@@ -76,6 +78,8 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
   let mkVar s = Var(s)
 
   let mkBottom = Bottom
+
+  let mkAppCtor c ts = mkApp (mkCtor c) ts
 
   module Path = struct
     type termt = t
