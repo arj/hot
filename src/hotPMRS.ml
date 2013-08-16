@@ -2,7 +2,10 @@ open Batteries
 
 (** The standard signature of a HORS. *)
 module type S = sig
-  module Rules : HotExtBatSet.S
+  module Rules : sig
+    include HotExtBatSet.S
+    val string_of : t -> string
+  end
   type terminals
   type nonterminal
   type nonterminals
@@ -28,8 +31,23 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
   functor(Term : HotTerm.S with type re = Nonterminals.elt) -> struct
 
     (* TODO Put Rules signature in S? *)
-    module Rules = HotExtBatSet.Make(struct type t = Nonterminals.elt * string list * Term.t option * Term.t
+    module Rules = struct
+      include HotExtBatSet.Make(struct type t = Nonterminals.elt * string list * Term.t option * Term.t
                                        let compare = compare end)
+
+      let string_of_elt (n,xs,p,t) =
+        Printf.sprintf "%s %s %s ==> %s"
+          (Nonterminals.string_of_elt ~show_type:false n)
+          (String.concat " " xs)
+          (BatOption.map_default Term.string_of "" p)
+          (Term.string_of t)
+
+      let string_of r =
+        let io = BatIO.output_string () in
+          print ~sep:("\n")
+            (fun out rule -> BatIO.nwrite out (string_of_elt rule)) io r;
+          BatIO.close_out io
+    end
 
     type terminals = Terminals.t
     type nonterminal = Nonterminals.elt 
@@ -63,17 +81,7 @@ module Make = functor(Terminals : HotRankedAlphabet.S) ->
     let string_of pmrs =
       let s_string = Terminals.string_of pmrs.s  in
       let n_string = Nonterminals.string_of pmrs.n  in
-      let r_string =
-        let io = BatIO.output_string () in
-        let string_of_rule (n,xs,p,t) =
-          Printf.sprintf "%s %s %s ==> %s"
-            (Nonterminals.string_of_elt ~show_type:false n)
-            (String.concat " " xs)
-            (BatOption.map_default Term.string_of "" p)
-            (Term.string_of t) in
-          Rules.print ~sep:("\n")
-            (fun out rule -> BatIO.nwrite out (string_of_rule rule)) io pmrs.r;
-          BatIO.close_out io in
+      let r_string = Rules.string_of pmrs.r in
       let i_string = Terminals.string_of_elt pmrs.i in
         Printf.sprintf "<%s,%s,\n%s,\n%s>"
           s_string

@@ -8,7 +8,10 @@
 (** The standard signature of a PMRS. *)
 module type S = sig
 
-  module Rules : HotExtBatSet.S
+  module Rules : sig
+    include HotExtBatSet.S
+    val string_of : t -> string
+  end
 
   (** {1 Types} *)
 
@@ -59,7 +62,10 @@ module Make :
       functor
         (Term : HotTerm.S with type re = Nonterminals.elt) ->
         sig
-          module Rules : HotExtBatSet.S with type elt = Nonterminals.elt * string list * Term.t option * Term.t
+          module Rules : sig
+            include HotExtBatSet.S with type elt = Nonterminals.elt * string list * Term.t option * Term.t
+            val string_of : t -> string
+          end
           type terminals = Terminals.t
           type nonterminal = Nonterminals.elt
           type nonterminals = Nonterminals.t
