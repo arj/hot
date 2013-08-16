@@ -47,6 +47,8 @@ module type S = sig
     Pushdown Trees are easy. FoSSaCS’02. *)
   (*val is_safe : t -> bool*)
 
+  val equal : t -> t -> bool
+
   (** {1 Utilities} *)
 
   (** Returns a human-readable representation from a given HORS. *)
@@ -73,5 +75,6 @@ module Make :
           type t
           val create : terminals -> nonterminals -> Rules.t -> nonterminal -> t
           val disjoint_union : t list -> nonterminal -> t
+          val equal : t -> t -> bool
           val string_of : t -> string
         end
