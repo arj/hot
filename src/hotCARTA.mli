@@ -67,6 +67,9 @@ module type S = sig
 
   (** Union of two states, i.e. respects SSingle and SMultiple *)
   val state_union : state -> state -> state
+
+  (** Checks if two given CARTA are equivalent. *)
+  val equal : t -> t -> bool
 end
 
 (** Create an instance of a CARTA using a state representation

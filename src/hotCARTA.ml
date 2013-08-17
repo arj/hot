@@ -36,6 +36,8 @@ module type S = sig
   val mkMultipleStateFromSingleList : state list -> state
 
   val state_union : state -> state -> state
+
+  val equal : t -> t -> bool
 end
 
 (*TODO Abstract to general tree automaton? *)
@@ -135,4 +137,10 @@ struct
     | SMultiple(lst), SSingle(f2,p2) -> SMultiple(BatList.unique @@ (f2,p2) :: lst)
     | SSingle(f1,p1), SMultiple(lst) -> SMultiple(BatList.unique @@ (f1,p1) :: lst)
     | SMultiple(lst), SMultiple(lst2) -> SMultiple(BatList.unique @@ lst @ lst2)
+
+  let equal c1 c2 =
+    RankedAlphabet.equal c1.s c2.s &&
+    c1.qs = c2.qs &&
+    c1.rules = c2.rules &&
+    c1.q = c2.q
 end
