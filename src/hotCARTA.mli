@@ -38,6 +38,9 @@ module type S = sig
     and an initial state. *)
   val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
 
+  (** Adds some rules to the given CARTA. *)
+  val add_rules : t -> rule list -> t
+
   (** Fetches all transitions with some start state. *)
   val get_transitions : t -> state -> rule list
 
