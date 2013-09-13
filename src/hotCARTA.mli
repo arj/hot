@@ -30,19 +30,22 @@ module type S = sig
     a path to the current symbol and a list of resulting states. *)
   type rule = state * Term.t * Term.Path.t * state_t
 
+  (** Module representing a set of rules. *)
+  module RuleSet : HotExtBatSet.S with type elt = rule
+
   (** Internal type of the CARTA *)
   type t
 
   (** Create a new automaton based on a set of states,
     a ranked alphabet of input symbols, a set of transition rules
     and an initial state. *)
-  val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
+  val create : RankedAlphabet.t -> States.t -> RuleSet.t -> state -> t
 
   (** Adds some rules to the given CARTA. *)
-  val add_rules : t -> rule list -> t
+  val add_rules : t -> RuleSet.t -> t
 
   (** Fetches all transitions with some start state. *)
-  val get_transitions : t -> state -> rule list
+  val get_transitions : t -> state -> RuleSet.t
 
   (** Returns a string representation of a given state. *)
   val string_of_state : state -> string

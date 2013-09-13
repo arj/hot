@@ -18,11 +18,13 @@ module type S = sig
 
   type rule = state * Term.t * Term.Path.t * state_t
 
+  module RuleSet : HotExtBatSet.S with type elt = rule
+
   type t
 
-  val create : RankedAlphabet.t -> States.t -> rule list -> state -> t
-  val add_rules : t -> rule list -> t
-  val get_transitions : t -> state -> rule list
+  val create : RankedAlphabet.t -> States.t -> RuleSet.t -> state -> t
+  val add_rules : t -> RuleSet.t -> t
+  val get_transitions : t -> state -> RuleSet.t
 
   val string_of_state : state -> string
   val string_of_rule : rule -> string
@@ -62,10 +64,12 @@ struct
 
   type rule = state * Term.t * Term.Path.t * state_t
 
+  module RuleSet = HotExtBatSet.Make(struct type t = rule let compare = compare end)
+
     type t = {
       s : RankedAlphabet.t;
       qs : States.t;
-      rules : rule list; (* TODO Set? *)
+      rules : RuleSet.t;
       q : state
     }
 
@@ -77,10 +81,10 @@ struct
   }
 
   let add_rules carta new_rules =
-    { carta with rules = carta.rules @ new_rules }
+    { carta with rules = RuleSet.union carta.rules new_rules }
 
   let get_transitions carta state =
-    List.filter (fun (q,_,_,_) -> q = state) carta.rules
+    RuleSet.filter (fun (q,_,_,_) -> q = state) carta.rules
 
   let string_of_state_internal (prefix, path) =
     if path = Term.Path.epsilon then
@@ -116,7 +120,7 @@ struct
           States.print ~sep:(",")
             (fun out s -> BatIO.nwrite out (string_of_state s)) io carta.qs;
           BatIO.close_out io in
-      let r_string = BatString.concat "\n" @@ BatList.map string_of_rule carta.rules in
+      let r_string = BatString.concat "\n" @@ BatList.map string_of_rule @@ RuleSet.as_list carta.rules in
       let q_string = string_of_state carta.q in
         Printf.sprintf "<%s,%s,\n%s,\n%s>"
           s_string
