@@ -44,6 +44,8 @@ module type S = sig
 
     val read : termt -> t -> termt
 
+    val length : t -> int
+
     module Infix : sig
       val (-->) : termt -> string -> t option
       val (-.) : termt -> t -> termt
@@ -176,6 +178,9 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
                 end
             | _ -> raise Path_not_found_in_term
 
+    let rec length p = match p with
+      | Empty -> 0
+      | Ele(_,_,p') -> 1 + length p'
 
     module Infix = struct
       let (-->) = path

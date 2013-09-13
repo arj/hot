@@ -108,6 +108,9 @@ module type S = sig
       Path_not_found_in_term is raised. *)
     val read : termt -> t -> termt
 
+    (** Returns the length of the path. {!Empty} is 0. *)
+    val length : t -> int
+
     (** Defines infix operators for some regularly used functions. *)
     module Infix : sig
 
@@ -199,6 +202,7 @@ sig
     val subst_path : t -> termt -> termt -> termt
     val path : termt -> string -> t option
     val read : termt -> t -> termt
+    val length : t -> int
 
     module Infix : sig
       val (-->) : termt -> string -> t option
