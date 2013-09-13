@@ -18,7 +18,11 @@ module type S = sig
 
   type rule = state * Term.t * Term.Path.t * state_t
 
-  module RuleSet : HotExtBatSet.S with type elt = rule
+  module RuleSet : sig
+    include HotExtBatSet.S with type elt = rule
+
+    val string_of: t -> string
+  end
 
   type t
 
@@ -62,30 +66,6 @@ struct
     | SDrain
     | SStates of state list
 
-  type rule = state * Term.t * Term.Path.t * state_t
-
-  module RuleSet = HotExtBatSet.Make(struct type t = rule let compare = compare end)
-
-    type t = {
-      s : RankedAlphabet.t;
-      qs : States.t;
-      rules : RuleSet.t;
-      q : state
-    }
-
-  let create s qs rules q = {
-    s = s;
-    qs = qs;
-    rules = rules;
-    q = q;
-  }
-
-  let add_rules carta new_rules =
-    { carta with rules = RuleSet.union carta.rules new_rules }
-
-  let get_transitions carta state =
-    RuleSet.filter (fun (q,_,_,_) -> q = state) carta.rules
-
   let string_of_state_internal (prefix, path) =
     if path = Term.Path.epsilon then
       Printf.sprintf "q_%s" prefix
@@ -97,6 +77,8 @@ struct
     | SMultiple(ss) ->
         let s = String.concat "," @@ BatList.map string_of_state_internal ss in
           Printf.sprintf "{%s}" s
+
+  type rule = state * Term.t * Term.Path.t * state_t
 
   let string_of_rule (q,t,p,qs) =
     let q_string = string_of_state q in
@@ -112,6 +94,36 @@ struct
         t_string
         p_string
         qs_string
+
+  module RuleSet = struct
+    include HotExtBatSet.Make(struct type t = rule let compare = compare end)
+
+    let string_of rs =
+      let io = BatIO.output_string () in
+        print ~sep:(",")
+          (fun out r -> BatIO.nwrite out (string_of_rule r)) io rs;
+          BatIO.close_out io 
+  end
+
+  type t = {
+    s : RankedAlphabet.t;
+    qs : States.t;
+    rules : RuleSet.t;
+    q : state
+  }
+
+  let create s qs rules q = {
+    s = s;
+    qs = qs;
+    rules = rules;
+    q = q;
+  }
+
+  let add_rules carta new_rules =
+    { carta with rules = RuleSet.union carta.rules new_rules }
+
+  let get_transitions carta state =
+    RuleSet.filter (fun (q,_,_,_) -> q = state) carta.rules
 
   let string_of carta =
       let s_string = RankedAlphabet.string_of carta.s  in

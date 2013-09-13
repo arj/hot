@@ -31,7 +31,11 @@ module type S = sig
   type rule = state * Term.t * Term.Path.t * state_t
 
   (** Module representing a set of rules. *)
-  module RuleSet : HotExtBatSet.S with type elt = rule
+  module RuleSet : sig
+    include HotExtBatSet.S with type elt = rule
+
+    val string_of: t -> string
+  end
 
   (** Internal type of the CARTA *)
   type t
