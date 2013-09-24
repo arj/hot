@@ -146,11 +146,15 @@ struct
   let mkSingleState (prefix,path) = SSingle(prefix,path)
   let mkMultipleState states = SMultiple(states)
   let mkMultipleStateFromSingleList ss =
+    let ss = BatList.sort_unique Pervasives.compare ss in
     let extract state = match state with
       | SSingle(prefix,path) -> (prefix,path)
       | SMultiple(_) -> failwith "Expected single state but got multiple."
     in
-      mkMultipleState @@ BatList.map extract ss
+      match ss with
+        | [] -> failwith "Empty state list"
+        | [s] -> s
+        | _ -> mkMultipleState @@ BatList.map extract ss
 
   let state_union q1 q2 = match q1, q2 with
     | SSingle(f1,p1), SSingle(f2,p2) -> SMultiple([(f1,p1);(f2,p2)])
