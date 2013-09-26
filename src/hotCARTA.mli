@@ -12,10 +12,17 @@ module type S = sig
   (** Terms created from the ranked alphabet. These are used in the rule. *)
   module Term : HotTerm.S
 
+  (** A state is represented as the function where it came from and
+    a path to the variable it represents *)
+  type inner_state = string * Term.Path.t
+
+  (** Set of inner_states. *)
+  module InnerStates : HotExtBatSet.S with type elt = inner_state
+
   (** Type of a state *)
   type state =
-    | SSingle of string * Term.Path.t
-    | SMultiple of (string * Term.Path.t) list
+    | SSingle of inner_state
+    | SMultiple of InnerStates.t
 
   (** A set of states create from the state representation. *)
   module States : HotExtBatSet.S with type elt = state
@@ -61,19 +68,19 @@ module type S = sig
   val string_of : t -> string
 
   (** Creates a drain for the transition. *)
-  val mkDrain : state_t
+  val mk_drain : state_t
 
   (** Creates simple transition goal states. *)
-  val mkStates : state list -> state_t
+  val mk_states : state list -> state_t
 
   (** Create a simple single state. *)
-  val mkSingleState : (string * Term.Path.t) -> state
+  val mk_single_state : (string * Term.Path.t) -> state
 
   (** Create a state as a union of several states. *)
-  val mkMultipleState : (string * Term.Path.t) list -> state
+  val mk_multiple_state : (string * Term.Path.t) list -> state
 
   (** Creates a multiple state from a list of single ones. *)
-  val mkMultipleStateFromSingleList : state list -> state
+  val mk_multiple_state_from_single_list : state list -> state
 
   (** Union of two states, i.e. respects SSingle and SMultiple *)
   val state_union : state -> state -> state

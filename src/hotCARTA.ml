@@ -6,9 +6,13 @@ module type S = sig
 
   module Term : HotTerm.S
 
+  type inner_state = string * Term.Path.t
+
+  module InnerStates : HotExtBatSet.S with type elt = inner_state
+
   type state =
-    | SSingle of string * Term.Path.t
-    | SMultiple of (string * Term.Path.t) list
+    | SSingle of inner_state
+    | SMultiple of InnerStates.t
 
   module States : HotExtBatSet.S with type elt = state
 
@@ -35,12 +39,12 @@ module type S = sig
 
   val string_of : t -> string
 
-  val mkDrain : state_t
+  val mk_drain : state_t
 
-  val mkStates : state list -> state_t
-  val mkSingleState : (string * Term.Path.t) -> state
-  val mkMultipleState : (string * Term.Path.t) list -> state
-  val mkMultipleStateFromSingleList : state list -> state
+  val mk_states : state list -> state_t
+  val mk_single_state : (string * Term.Path.t) -> state
+  val mk_multiple_state : (string * Term.Path.t) list -> state
+  val mk_multiple_state_from_single_list : state list -> state
 
   val state_union : state -> state -> state
 
@@ -56,9 +60,13 @@ struct
   module RankedAlphabet = HotRankedAlphabet.Make(Elt)(Type)
   module Term = HotTerm.Make(RankedAlphabet)
 
+  type inner_state = string * Term.Path.t
+
+  module InnerStates = HotExtBatSet.Make(struct type t = inner_state let compare = compare end)
+
   type state =
-    | SSingle of string * Term.Path.t
-    | SMultiple of (string * Term.Path.t) list
+    | SSingle of inner_state
+    | SMultiple of InnerStates.t
 
   module States = HotExtBatSet.Make(struct type t = state let compare = compare
                                     end)
@@ -75,8 +83,10 @@ struct
   let string_of_state ss = match ss with
     | SSingle(prefix,path) -> string_of_state_internal (prefix,path)
     | SMultiple(ss) ->
-        let s = String.concat "," @@ BatList.map string_of_state_internal ss in
-          Printf.sprintf "{%s}" s
+        let io = BatIO.output_string () in
+          InnerStates.print ~first:("{") ~last:("}") ~sep:(",")
+            (fun out r -> BatIO.nwrite out (string_of_state_internal r)) io ss;
+          BatIO.close_out io
 
   type rule = state * Term.t * Term.Path.t * state_t
 
@@ -140,12 +150,16 @@ struct
           r_string
           q_string
 
-  let mkDrain = SDrain
-  let mkStates qs = SStates(qs)
+  let mk_drain = SDrain
+  let mk_states qs = SStates(qs)
 
-  let mkSingleState (prefix,path) = SSingle(prefix,path)
-  let mkMultipleState states = SMultiple(states)
-  let mkMultipleStateFromSingleList ss =
+  let mk_single_state (prefix,path) = SSingle(prefix,path)
+
+  let mk_multiple_state states =
+    let state_set = InnerStates.of_list states in
+      SMultiple(state_set)
+
+  let mk_multiple_state_from_single_list ss =
     let ss = BatList.sort_unique Pervasives.compare ss in
     let extract state = match state with
       | SSingle(prefix,path) -> (prefix,path)
@@ -154,13 +168,13 @@ struct
       match ss with
         | [] -> failwith "Empty state list"
         | [s] -> s
-        | _ -> mkMultipleState @@ BatList.map extract ss
+        | _ -> mk_multiple_state @@ BatList.map extract ss
 
   let state_union q1 q2 = match q1, q2 with
-    | SSingle(f1,p1), SSingle(f2,p2) -> SMultiple([(f1,p1);(f2,p2)])
-    | SMultiple(lst), SSingle(f2,p2) -> SMultiple(BatList.unique @@ (f2,p2) :: lst)
-    | SSingle(f1,p1), SMultiple(lst) -> SMultiple(BatList.unique @@ (f1,p1) :: lst)
-    | SMultiple(lst), SMultiple(lst2) -> SMultiple(BatList.unique @@ lst @ lst2)
+    | SSingle(f1,p1), SSingle(f2,p2) -> SMultiple(InnerStates.of_list [(f1,p1);(f2,p2)])
+    | SMultiple(lst), SSingle(f2,p2) -> SMultiple(InnerStates.add (f2,p2) lst)
+    | SSingle(f1,p1), SMultiple(lst) ->SMultiple(InnerStates.add (f1,p1) lst)
+    | SMultiple(lst1), SMultiple(lst2) -> SMultiple(InnerStates.union lst1 lst2)
 
   let equal c1 c2 =
     RankedAlphabet.equal c1.s c2.s &&
