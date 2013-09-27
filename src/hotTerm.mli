@@ -111,6 +111,11 @@ module type S = sig
     (** Returns the length of the path. {!Empty} is 0. *)
     val length : t -> int
 
+    (** Removes a given suffix from a term if the
+      suffix exists, otherwise raises Path_not_found_in_term. *)
+    val remove_suffix : t -> t -> t
+
+
     (** Defines infix operators for some regularly used functions. *)
     module Infix : sig
 
@@ -203,6 +208,7 @@ sig
     val path : termt -> string -> t option
     val read : termt -> t -> termt
     val length : t -> int
+    val remove_suffix : t -> t -> t
 
     module Infix : sig
       val (-->) : termt -> string -> t option

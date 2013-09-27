@@ -46,6 +46,8 @@ module type S = sig
 
     val length : t -> int
 
+    val remove_suffix : t -> t -> t
+
     module Infix : sig
       val (-->) : termt -> string -> t option
       val (-.) : termt -> t -> termt
@@ -181,6 +183,21 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     let rec length p = match p with
       | Empty -> 0
       | Ele(_,_,p') -> 1 + length p'
+
+    let remove_suffix path suff =
+      let path' = reverse path in
+      let suff' = reverse suff in
+      let rec inner p s = match p,s with
+        | Empty, Ele(_,_,_) -> raise Path_not_found_in_term
+        | p',Empty -> reverse p (* base *)
+        | Ele(cp,ip,p'), Ele(cs,is,s') ->
+            if cp = cs && ip = is then
+              inner p' s'
+            else
+              raise Path_not_found_in_term
+      in
+        inner path' suff'
+
 
     module Infix = struct
       let (-->) = path

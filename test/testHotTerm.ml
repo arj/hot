@@ -19,6 +19,7 @@ let c0 = ("C", Sort.create_n 0)
 let c1 = ("C", Sort.create_n 1)
 let c2 = ("C", Sort.create_n 2)
 let b1 = ("B", Sort.create_n 1)
+let b0 = ("B", Sort.create_n 0)
 let d1 = ("D", Sort.create_n 1)
 let zero = ("zero",Sort.base)
 
@@ -379,6 +380,49 @@ let test_unify_appzero_star () =
   let out = unify (mkApp (mkCtor zero) []) @@ mkVar "*" in
     assert_equal ~printer:ures_pr exp out
 
+(* remove_suffix *)
+
+let test_remove_suffix_empty_path_empty_suffix () =
+  let open Path in
+  let exp = Empty in
+  let out = remove_suffix exp Empty in
+    assert_equal ~printer:string_of exp out
+
+let test_remove_suffix_nonempty_path_empty_suffix () =
+  let open Path in
+  let exp = Ele(c0,0,Ele(c0,0,Empty)) in
+  let out = remove_suffix exp Empty in
+    assert_equal ~printer:string_of exp out
+
+let test_remove_suffix_nonempty_path_nonempty_suffix () =
+  let open Path in
+  let exp = Ele(b0,0,Empty) in
+  let inp = Ele(b0,0,Ele(c0,0,Empty)) in
+  let suf = Ele(c0,0,Empty) in
+  let out = remove_suffix inp suf in
+    assert_equal ~printer:string_of exp out
+
+let test_remove_suffix_nonempty_path_nonempty_suffix_bad () =
+  let open Path in
+  let inp = Ele(b0,0,Empty) in
+  let suf = Ele(c0,0,Empty) in
+  let out () = remove_suffix inp suf in
+    assert_raises HotTerm.Path_not_found_in_term out
+
+let test_remove_suffix_nonempty_path_nonempty_suffix_bad_index () =
+  let open Path in
+  let inp = Ele(b0,0,Empty) in
+  let suf = Ele(b0,1,Empty) in
+  let out () = remove_suffix inp suf in
+    assert_raises HotTerm.Path_not_found_in_term out
+
+let test_remove_suffix_suffix_too_long () =
+  let open Path in
+  let inp = Ele(c0,0,Empty) in
+  let suf = Ele(c0,0,Ele(c0,0,Empty)) in
+  let out () = remove_suffix inp suf in
+    assert_raises HotTerm.Path_not_found_in_term out
+
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
   [
@@ -448,6 +492,12 @@ let init_tests () =
    ("unify app,app snd bad 2", test_unify_app_app_snd_bad_2);
    ("unify zero,*", test_unify_zero_star);
    ("unify (zero) [],*", test_unify_appzero_star);
+   ("path remove_suffix empty empty", test_remove_suffix_empty_path_empty_suffix);
+   ("path remove_suffix nonempty empty", test_remove_suffix_nonempty_path_empty_suffix);
+   ("path remove_suffix nonempty nonempty", test_remove_suffix_nonempty_path_nonempty_suffix);
+   ("path remove_suffix nonempty nonempty bad", test_remove_suffix_nonempty_path_nonempty_suffix_bad);
+   ("path remove_suffix nonempty nonempty bad index", test_remove_suffix_nonempty_path_nonempty_suffix_bad_index);
+   ("path remove_suffix suffix too long", test_remove_suffix_suffix_too_long);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests
