@@ -49,6 +49,8 @@ module type S = sig
   val state_union : state -> state -> state
 
   val equal : t -> t -> bool
+
+  val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
 end
 
 (*TODO Abstract to general tree automaton? *)
@@ -181,4 +183,11 @@ struct
     c1.qs = c2.qs &&
     RuleSet.equal c1.rules c2.rules &&
     c1.q = c2.q
+
+  let accepts carta input =
+    let accepts' (cfg : (state * Term.Path.t) list) = match cfg with
+      | [] -> true (* We are done. Everything accepted. *)
+      | _ -> false
+    in
+    failwith "Not yet implemented"
 end

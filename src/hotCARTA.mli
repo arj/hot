@@ -87,6 +87,14 @@ module type S = sig
 
   (** Checks if two given CARTA are equivalent. *)
   val equal : t -> t -> bool
+  
+  (** Checks if the CARTA accepts the given finite term.
+    Acceptance is trivial, i.e. if every node in the input tree
+    can be given a state consistent to the contexts and transitions
+    it accepts.
+    Result is either Ok or the path in the term that fails.
+  *)
+  val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
 end
 
 (** Create an instance of a CARTA using a state representation
