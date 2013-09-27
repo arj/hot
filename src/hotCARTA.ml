@@ -179,6 +179,6 @@ struct
   let equal c1 c2 =
     RankedAlphabet.equal c1.s c2.s &&
     c1.qs = c2.qs &&
-    c1.rules = c2.rules &&
+    RuleSet.equal c1.rules c2.rules &&
     c1.q = c2.q
 end
