@@ -185,9 +185,50 @@ struct
     c1.q = c2.q
 
   let accepts carta input =
-    let accepts' (cfg : (state * Term.Path.t) list) = match cfg with
-      | [] -> true (* We are done. Everything accepted. *)
-      | _ -> false
+    let open BatResult.Monad in
+    let open Term in
+    let open Term.Path in
+    let open Term.Path.Infix in
+    let return_err x = BatResult.Bad(x) in
+    let accepts' path (cfg : state list) = match cfg with
+      | [] -> return () (* We are done. Everything accepted. *)
+      | cfgs ->
+          (* Idea (for each cfg):
+            p = path to term in delta
+            path' = path with suffix p removed
+            input' = input -. path
+            check if input' ~ term
+           *)
+          let check_cfg q =
+            let delta = RuleSet.as_list @@ get_transitions carta q in
+            let check_transition ((q,t,p,qs) as rule) : (rule,Term.Path.t) BatResult.t =
+              try
+                (* remove_suffix might raise an exception! *)
+                let path' = remove_suffix path p in
+                let input' = input -. path' in
+                  match unify input' t with
+                    | BatResult.Bad(_) -> return_err path
+                    | BatResult.Ok(_) -> return rule (* TODO complete! *)
+              with
+                | HotTerm.Path_not_found_in_term -> return_err path
+            in
+            let delta_res = BatList.map check_transition delta in
+              (* Exactly one result must be ok!
+                 if none is ok, then the input is not accepted.
+                 if >1   is ok, then we raise an exception!
+               *)
+            let (ok,bad) = BatList.partition BatResult.is_ok delta_res in
+              match ok with
+                | [] -> return_err path
+                | Ok(r) :: [] ->
+                    Printf.sprintf "Now checking %s\n" @@ string_of_rule r;
+                    failwith "Yet not implemented" (* TODO *)
+                | _ -> failwith "Non-deterministic transition rules!"
+          in
+            let cfg_results = BatList.map check_cfg cfg in
+            match BatList.filter (BatResult.is_bad) cfg_results with
+              | [] -> return ()
+              | err :: _ -> err
     in
-    failwith "Not yet implemented"
+      accepts' Term.Path.epsilon [carta.q]
 end
