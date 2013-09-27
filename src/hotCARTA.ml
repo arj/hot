@@ -221,8 +221,9 @@ struct
               match ok with
                 | [] -> return_err path
                 | Ok(r) :: [] ->
-                    Printf.sprintf "Now checking %s\n" @@ string_of_rule r;
-                    failwith "Yet not implemented" (* TODO *)
+                    Printf.printf "Now checking %s\n" @@ string_of_rule r;
+                    return () (* TODO !!! *)
+                    (*failwith "Yet not implemented" (* TODO *)*)
                 | _ -> failwith "Non-deterministic transition rules!"
           in
             let cfg_results = BatList.map check_cfg cfg in

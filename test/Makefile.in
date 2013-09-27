@@ -48,6 +48,7 @@ SOURCES = \
 	test.ml \
 	testHotType.ml \
 	testHotTerm.ml \
+	testHotCARTA.ml \
 	testMain.ml
 
 #	testHotExtBatSet.ml \
