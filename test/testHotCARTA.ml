@@ -48,13 +48,18 @@ let test_accept_nil_bad () =
 
 let test_accept_zero_num_ok () =
   let term = mkCtor zero in
-    assert_bool "Number CARTA should accept term zero" @@ BatResult.is_ok @@ accepts carta_zero term
+    assert_bool "Number CARTA should accept term zero" @@ BatResult.is_ok @@ accepts carta_number term
+
+let test_accept_zero_succ_num_ok () =
+  let term = mkApp (mkCtor succ) [mkCtor zero] in
+    assert_bool "Number CARTA should accept term zero" @@ BatResult.is_ok @@ accepts carta_number term
 
 let init_tests () =
   [
    ("accept zero ok", test_accept_zero_ok);
    ("accept nil bad", test_accept_nil_bad);
    ("accept zero num ok", test_accept_zero_num_ok);
+   ("accept zero_succ num ok", test_accept_zero_succ_num_ok);
   ]
 
 let _ = install_tests_new "accept" init_tests
