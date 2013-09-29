@@ -64,6 +64,7 @@ ANNOTATE = yes
 
 bisect-report: test
 	bisect-report -html report *.out
+	rm -f bisect*.out
 
 # make target (see manual) : byte-code, debug-code, native-code, ...
 test: debug-code
