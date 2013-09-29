@@ -191,9 +191,9 @@ struct
     let open Term.Path.Infix in
     let return_err x = BatResult.Bad(x) in
     let rec accepts_inner path cfg : (unit, Term.Path.t) BatResult.t =
-      Printf.printf "accepts_inner %s %s\n"
+(*      Printf.printf "accepts_inner %s %s\n"
         (Term.Path.string_of ~epsilon:true path)
-        (string_of_state cfg);
+        (string_of_state cfg);*)
       (* Idea (for each cfg):
        p = path to term in delta
        path' = path with suffix p removed
@@ -220,8 +220,7 @@ struct
       let (ok,bad) = BatList.partition BatResult.is_ok delta_res in
         match ok with
           | [] -> return_err path
-          | Ok((q,t,p,qs) as r) :: [] ->
-              (*Printf.printf "Now checking %s\n" @@ string_of_rule r;*)
+          | Ok(q,t,p,qs) :: [] ->
               begin
                 match qs with
                   | SDrain -> return () (* We accept anything below a drain *)
