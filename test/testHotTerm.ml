@@ -370,6 +370,11 @@ let test_unify_app_app_snd_bad_2 () =
   let out = unify (mkApp (mkCtor c1) [mkCtor d1;mkCtor d1]) (mkApp (mkCtor c1) [mkCtor c1;mkCtor d1]) in
     assert_equal ~printer:ures_pr exp out
 
+let test_unify_app_app_diff_length () =
+  let exp = Bad(()) in
+  let out = unify (mkApp (mkCtor c1) [mkCtor d1;mkCtor d1]) (mkApp (mkCtor c1) [mkCtor d1]) in
+    assert_equal ~printer:ures_pr exp out
+
 let test_unify_zero_star () =
   let exp = Ok(["*",mkCtor zero]) in
   let out = unify (mkCtor zero) @@ mkVar "*" in
@@ -490,6 +495,7 @@ let init_tests () =
    ("unify app,app snd ok", test_unify_app_app_snd_ok);
    ("unify app,app snd bad 1", test_unify_app_app_snd_bad_1);
    ("unify app,app snd bad 2", test_unify_app_app_snd_bad_2);
+   ("unify app,app diff length", test_unify_app_app_diff_length);
    ("unify zero,*", test_unify_zero_star);
    ("unify (zero) [],*", test_unify_appzero_star);
    ("path remove_suffix empty empty", test_remove_suffix_empty_path_empty_suffix);

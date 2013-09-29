@@ -272,13 +272,18 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
         begin
         match unify t t' with
           | Ok(u1) ->
-              let inner = BatList.map2 unify ts ts' in
-              let f ack e = match ack,e with
-                | Ok(lack), Ok(lst) -> return @@ lst @ lack
-                | Bad(t), _ -> Bad(t)
-                | _,Bad(t) -> Bad(t)
-              in
-                BatList.fold_left f (Ok(u1)) inner
+              if BatList.length ts = BatList.length ts' then
+                begin
+                  let inner = BatList.map2 unify ts ts' in
+                  let f ack e = match ack,e with
+                    | Ok(lack), Ok(lst) -> return @@ lst @ lack
+                    | Bad(t), _ -> Bad(t)
+                    | _,Bad(t) -> Bad(t)
+                  in
+                    BatList.fold_left f (Ok(u1)) inner
+                end
+              else
+                Bad(())
           | Bad(b) -> Bad(b)
         end
     | Ctor(c),Ctor(c') when c = c' -> return []
