@@ -12,17 +12,16 @@ module type S = sig
   (** Terms created from the ranked alphabet. These are used in the rule. *)
   module Term : HotTerm.S
 
+
   (** A state is represented as the function where it came from and
     a path to the variable it represents *)
   type inner_state = string * Term.Path.t
 
-  (** Set of inner_states. *)
-  module InnerStates : HotExtBatSet.S with type elt = inner_state
+  (** A state, that is represented as a set of function * path tuples. *)
+  module State : HotExtBatSet.S with type elt = inner_state
 
-  (** Type of a state *)
-  type state =
-    | SSingle of inner_state
-    | SMultiple of InnerStates.t
+  (** Alias for the state type. *)
+  type state = State.t
 
   (** A set of states create from the state representation. *)
   module States : HotExtBatSet.S with type elt = state
@@ -73,17 +72,14 @@ module type S = sig
   (** Creates simple transition goal states. *)
   val mk_states : state list -> state_t
 
-  (** Create a simple single state. *)
-  val mk_single_state : (string * Term.Path.t) -> state
+  (** Create a new state that consists of function * path pairs. *)
+  val mk_state : (string * Term.Path.t) list -> state
 
-  (** Create a state as a union of several states. *)
-  val mk_multiple_state : (string * Term.Path.t) list -> state
+  (** Create a new state that only consists of one function * path pair. *)
+  val mk_state_1 : string * Term.Path.t -> state
 
-  (** Creates a multiple state from a list of single ones. *)
-  val mk_multiple_state_from_single_list : state list -> state
-
-  (** Union of two states, i.e. respects SSingle and SMultiple *)
-  val state_union : state -> state -> state
+  (** Union of a list of states. *)
+  val mk_state_union : state list -> state
 
   (** Checks if two given CARTA are equivalent. *)
   val equal : t -> t -> bool

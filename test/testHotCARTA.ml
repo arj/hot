@@ -30,7 +30,7 @@ let mkPair a b = mkApp (mkCtor pair) [a;b]
 (* A CARTA that accepts one element only. *)
 let carta_zero =
   let sigma = RA.singleton zero in
-  let q = mk_single_state ("f",P.epsilon) in
+  let q = mk_state_1 ("f",P.epsilon) in
   let states = States.singleton q in
   let r = (q, mkCtor zero, P.epsilon, mk_states []) in
   let rules = RuleSet.singleton r in
@@ -39,7 +39,7 @@ let carta_zero =
 (** A CARTA that accepts numbers, i.e. zero/succ lists *)
 let carta_number = 
   let sigma = RA.of_list [zero;succ] in
-  let q = mk_single_state ("f",P.epsilon) in
+  let q = mk_state_1 ("f",P.epsilon) in
   let states = States.singleton q in
   let r1 = (q, mkCtor zero, P.epsilon, mk_states []) in
   let r2 = (q, mkApp (mkCtor succ) [mkVar "x"], P.epsilon, mk_states [q]) in
@@ -49,7 +49,7 @@ let carta_number =
 (** A CARTA that accepts numbers, i.e. zero/succ lists *)
 let carta_succ_drain =
   let sigma = RA.of_list [succ] in
-  let q = mk_single_state ("f",P.epsilon) in
+  let q = mk_state_1 ("f",P.epsilon) in
   let states = States.singleton q in
   let r = (q, mkSucc (mkVar "*"), P.epsilon, mk_drain) in
   let rules = RuleSet.singleton r in
@@ -59,10 +59,10 @@ let carta_succ_drain =
   or nil (1st) or a number (snd) *)
 let carta_pair =
   let sigma = RA.of_list [succ] in
-  let q = mk_single_state ("f",P.epsilon) in
-  let q_fst = mk_single_state ("fst",P.epsilon) in
-  let q_snd = mk_single_state ("snd",P.epsilon) in
-  let q_num = mk_single_state ("num",P.epsilon) in
+  let q = mk_state_1 ("f",P.epsilon) in
+  let q_fst = mk_state_1 ("fst",P.epsilon) in
+  let q_snd = mk_state_1 ("snd",P.epsilon) in
+  let q_num = mk_state_1 ("num",P.epsilon) in
   let states = States.of_list [q;q_fst;q_snd;q_num] in
   let r = (q, mkPair (mkVar "a") (mkVar "b"), P.epsilon, mk_states [q_fst;q_snd]) in
   let r_fst_1 = (q_fst, mkPair (mkVar "a") (mkVar "b"), P.epsilon, mk_states [q_fst;q_snd]) in
@@ -80,8 +80,8 @@ let carta_pair =
 let carta_ctxt_succ_zero =
   let open Term.Path in
   let sigma = RA.singleton zero in
-  let q = mk_single_state ("f",P.epsilon) in
-  let q2 = mk_single_state ("g",P.epsilon) in
+  let q = mk_state_1 ("f",P.epsilon) in
+  let q2 = mk_state_1 ("g",P.epsilon) in
   let states = States.of_list [q;q2] in
   let r1 = (q, mkSucc (mkVar "x"), P.epsilon, mk_states [q2]) in
   let r2 = (q2, mkSucc (mkZero), Ele(succ,0,Empty), mk_states []) in
@@ -92,9 +92,9 @@ let carta_ctxt_succ_zero =
 let carta_ctxt_2 =
   let open Term.Path in
   let sigma = RA.of_list [pair] in
-  let q = mk_single_state ("f",P.epsilon) in
-  let q_fst = mk_single_state ("fst",P.epsilon) in
-  let q_snd = mk_single_state ("snd",P.epsilon) in
+  let q = mk_state_1 ("f",P.epsilon) in
+  let q_fst = mk_state_1 ("fst",P.epsilon) in
+  let q_snd = mk_state_1 ("snd",P.epsilon) in
   let states = States.of_list [q;q_fst;q_snd] in
   let r = (q, mkPair (mkVar "x") (mkVar "y"), P.epsilon, mk_states [q_fst;q_snd]) in
   let r_fst_1 = (q_fst, mkPair (mkZero) (mkVar "y"), Ele(pair,0,Empty), mk_states []) in
