@@ -15,11 +15,13 @@ open HotSimple.SimpleCARTA
 
 let zero = ("zero", o)
 let nil = ("nil", o)
+let foo = ("foo", o)
 let succ = ("succ", o ^=> o)
 let pair = ("pair", o ^=> o ^=> o)
 
 let mkZero = mkCtor zero
 let mkNil = mkCtor nil
+let mkFoo = mkCtor foo
 let mkSucc a = mkApp (mkCtor succ) [a]
 let mkPair a b = mkApp (mkCtor pair) [a;b]
 
@@ -72,6 +74,33 @@ let carta_pair =
   let r_num_2 = (q_num, mkSucc (mkVar "x"), P.epsilon, mk_states [q_num]) in
   let rules = RuleSet.of_list
                 [r;r_fst_1;r_fst_2;r_snd_1;r_snd_2;r_snd_3;r_num_1;r_num_2] in
+    create sigma states rules q
+
+(* A CARTA that accepts succ(zero) but requires context. *)
+let carta_ctxt_succ_zero =
+  let sigma = RA.singleton zero in
+  let q = mk_single_state ("f",P.epsilon) in
+  let q2 = mk_single_state ("g",P.epsilon) in
+  let states = States.of_list [q;q2] in
+  let r1 = (q, mkSucc (mkVar "x"), P.epsilon, mk_states [q2]) in
+  let r2 = (q2, mkSucc (mkZero), P.epsilon, mk_states []) in
+  let rules = RuleSet.of_list [r1;r2] in
+    create sigma states rules q
+
+(** A CARTA that depending on the context accepts different stuff *)
+let carta_ctxt_2 =
+  let open Term.Path in
+  let sigma = RA.of_list [pair] in
+  let q = mk_single_state ("f",P.epsilon) in
+  let q_fst = mk_single_state ("fst",P.epsilon) in
+  let q_snd = mk_single_state ("snd",P.epsilon) in
+  let states = States.of_list [q;q_fst;q_snd] in
+  let r = (q, mkPair (mkVar "x") (mkVar "y"), P.epsilon, mk_states [q_fst;q_snd]) in
+  let r_fst_1 = (q_fst, mkPair (mkZero) (mkVar "y"), Ele(pair,0,Empty), mk_states []) in
+  let r_fst_2 = (q_fst, mkPair (mkNil)  (mkVar "y"), Ele(pair,0,Empty), mk_states []) in
+  let r_snd_1 = (q_snd, mkPair (mkZero) (mkVar "*"), Ele(pair,1,Empty), mk_drain) in
+  let r_snd_2 = (q_snd, mkPair (mkNil) (mkNil), Ele(pair,1,Empty), mk_states []) in
+  let rules = RuleSet.of_list [r;r_fst_1;r_fst_2;r_snd_1;r_snd_2] in
     create sigma states rules q
 
 (** Helper function for acceptance tests *)
@@ -136,6 +165,44 @@ let test_accept_nested_pair_carta_pair_2_bad () =
                (mkPair mkNil (mkSucc (mkSucc (mkSucc (mkSucc mkNil))))) in
     test_accept_bad carta_pair term
 
+(* Acceptance checks that require contexts *)
+
+let test_accept_ctxt_succ_zero_ok () =
+  let term = mkSucc mkZero in
+    test_accept carta_ctxt_succ_zero term
+
+let test_accept_ctxt_succ_nil_bad () =
+  let term = mkSucc mkNil in
+    test_accept_bad carta_ctxt_succ_zero term
+
+let test_accept_ctxt_1_ok () =
+  let term = mkPair mkNil mkNil in
+    test_accept carta_ctxt_2 term
+
+let test_accept_ctxt_2_ok () =
+  let term = mkPair mkZero mkNil in
+    test_accept carta_ctxt_2 term
+
+let test_accept_ctxt_3_ok () =
+  let term = mkPair mkZero mkZero in
+    test_accept carta_ctxt_2 term
+
+let test_accept_ctxt_4_ok () =
+  let term = mkPair mkZero mkFoo in
+    test_accept carta_ctxt_2 term
+
+let test_accept_ctxt_5_ok () =
+  let term = mkPair mkNil mkNil in
+    test_accept carta_ctxt_2 term
+
+let test_accept_ctxt_6_bad () =
+  let term = mkPair mkNil mkZero in
+    test_accept_bad carta_ctxt_2 term
+
+let test_accept_ctxt_7_bad () =
+  let term = mkPair mkFoo mkZero in
+    test_accept_bad carta_ctxt_2 term
+
 let init_tests () =
   [
    ("accept zero ok", test_accept_zero_ok);
@@ -148,6 +215,15 @@ let init_tests () =
    ("accept nested_pair pair ok 3", test_accept_nested_pair_carta_pair_3_ok);
    ("accept nested_pair pair bad 1", test_accept_nested_pair_carta_pair_1_bad);
    ("accept nested_pair pair bad 2", test_accept_nested_pair_carta_pair_2_bad);
+   ("accept simple context succ zero ok", test_accept_ctxt_succ_zero_ok);
+   ("accept simple context succ nil ok", test_accept_ctxt_succ_nil_bad);
+   ("accept context-dependant drain 1 ok", test_accept_ctxt_1_ok);
+   ("accept context-dependant drain 2 ok", test_accept_ctxt_2_ok);
+   ("accept context-dependant drain 3 ok", test_accept_ctxt_3_ok);
+   ("accept context-dependant drain 4 ok", test_accept_ctxt_4_ok);
+   ("accept context-dependant drain 5 ok", test_accept_ctxt_5_ok);
+   ("accept context-dependant drain 6 bad", test_accept_ctxt_6_bad);
+   ("accept context-dependant drain 7 bad", test_accept_ctxt_7_bad);
   ]
 
 let _ = install_tests_new "HotCARTA" init_tests
