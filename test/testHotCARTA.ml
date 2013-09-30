@@ -78,12 +78,13 @@ let carta_pair =
 
 (* A CARTA that accepts succ(zero) but requires context. *)
 let carta_ctxt_succ_zero =
+  let open Term.Path in
   let sigma = RA.singleton zero in
   let q = mk_single_state ("f",P.epsilon) in
   let q2 = mk_single_state ("g",P.epsilon) in
   let states = States.of_list [q;q2] in
   let r1 = (q, mkSucc (mkVar "x"), P.epsilon, mk_states [q2]) in
-  let r2 = (q2, mkSucc (mkZero), P.epsilon, mk_states []) in
+  let r2 = (q2, mkSucc (mkZero), Ele(succ,0,Empty), mk_states []) in
   let rules = RuleSet.of_list [r1;r2] in
     create sigma states rules q
 
