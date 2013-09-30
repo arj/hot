@@ -14,6 +14,8 @@ everything: all doc test
 
 clean:
 	$(MAKE) -C test clean
+
+dist-clean: clean
 	rm -rf doc
 
 doc: all
@@ -35,4 +37,4 @@ dist:
 test:
 	$(MAKE) -C test
 
-.PHONY: dist doc test clean
+.PHONY: dist doc test clean dist-clean
