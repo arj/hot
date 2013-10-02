@@ -57,6 +57,9 @@ module type S = sig
   (** Fetches all transitions with some start state. *)
   val get_transitions : t -> state -> RuleSet.t
 
+  (** Fetches all rules. *)
+  val get_rules : t -> RuleSet.t
+
   (** Returns a string representation of a given state. *)
   val string_of_state : state -> string
 

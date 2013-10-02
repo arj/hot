@@ -31,6 +31,7 @@ module type S = sig
   val create : RankedAlphabet.t -> States.t -> RuleSet.t -> state -> t
   val add_rules : t -> RuleSet.t -> t
   val get_transitions : t -> state -> RuleSet.t
+  val get_rules : t -> RuleSet.t
 
   val string_of_state : state -> string
   val string_of_rule : rule -> string
@@ -135,6 +136,8 @@ struct
 
   let get_transitions carta state =
     RuleSet.filter (fun (q,_,_,_) -> q = state) carta.rules
+
+  let get_rules carta = carta.rules
 
   let string_of carta =
       let s_string = RankedAlphabet.string_of carta.s  in
