@@ -60,6 +60,9 @@ module type S = sig
   (** Fetches all rules. *)
   val get_rules : t -> RuleSet.t
 
+  (** Filters rules in a CARTA according to a predicate. *)
+  val filter_rules : t -> (rule -> bool) -> t
+
   (** Returns a string representation of a given state. *)
   val string_of_state : state -> string
 
