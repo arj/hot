@@ -290,5 +290,7 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | Bottom,Bottom -> return []
     | Var(x),_ -> return [(x,t2)]
     | _,Var(x) -> return [(x,t1)]
+    | Bottom,_ -> return []
+    | _,Bottom -> return []
     | _,_ -> Bad(())
 end
