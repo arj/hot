@@ -40,6 +40,9 @@ module type S = sig
   module RuleSet : sig
     include HotExtBatSet.S with type elt = rule
 
+    (** Get all states that are used in the rules. *)
+    val get_states: t -> state list
+
     val string_of: t -> string
   end
 
@@ -90,6 +93,10 @@ module type S = sig
   (** Checks if two given CARTA are equivalent. *)
   val equal : t -> t -> bool
   
+  (** Sets the set of state Q used by the automaton
+    to all the states used in the rules and the initial state. *)
+  val update_q : t -> t
+
   (** Checks if the CARTA accepts the given finite term.
     Acceptance is trivial, i.e. if every node in the input tree
     can be given a state consistent to the contexts and transitions

@@ -23,6 +23,8 @@ module type S = sig
   module RuleSet : sig
     include HotExtBatSet.S with type elt = rule
 
+    val get_states: t -> state list
+
     val string_of: t -> string
   end
 
@@ -48,6 +50,8 @@ module type S = sig
   val mk_state_union : state list -> state
 
   val equal : t -> t -> bool
+
+  val update_q : t -> t
 
   val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
 end
@@ -110,6 +114,13 @@ struct
 
   module RuleSet = struct
     include HotExtBatSet.Make(struct type t = rule let compare = compare end)
+
+    let get_states rs =
+      let states = ref [] in
+        iter (fun (q,_,_,qs) -> match qs with
+                | SDrain -> states := q :: !states
+                | SStates(qs') -> states := q :: qs' @ !states) rs;
+        !states
 
     let string_of rs =
       let io = BatIO.output_string () in
@@ -174,6 +185,10 @@ struct
     c1.qs = c2.qs &&
     RuleSet.equal c1.rules c2.rules &&
     c1.q = c2.q
+
+  let update_q c =
+    let states = RuleSet.get_states c.rules in
+      { c with qs = States.of_list @@ c.q :: states }
 
   let accepts carta input =
     let open BatResult.Monad in
