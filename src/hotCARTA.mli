@@ -41,7 +41,11 @@ module type S = sig
     include HotExtBatSet.S with type elt = rule
 
     (** Get all states that are used in the rules. *)
-    val get_states: t -> state list
+    val get_states: t -> States.t
+
+    (** Get all states in the domain and in the range of the
+      rules, separately. *)
+    val get_states_dom_ran: t -> States.t * States.t
 
     val string_of: t -> string
   end
