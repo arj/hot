@@ -51,6 +51,8 @@ module type S = sig
 
   val equal : t -> t -> bool
 
+  val disjoint_union : t -> t -> state -> t
+
   val update_q : t -> t
 
   val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
@@ -185,6 +187,14 @@ struct
     c1.qs = c2.qs &&
     RuleSet.equal c1.rules c2.rules &&
     c1.q = c2.q
+
+  let disjoint_union cr1 cr2 qinitial =
+    {
+      s = RankedAlphabet.union cr1.s cr2.s;
+      qs = States.union cr1.qs cr2.qs;
+      rules = RuleSet.union cr1.rules cr2.rules;
+      q = qinitial;
+    }
 
   let update_q c =
     let states = RuleSet.get_states c.rules in
