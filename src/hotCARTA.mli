@@ -94,9 +94,9 @@ module type S = sig
   val equal : t -> t -> bool
 
   (** Disjoint union of two automata, i.e. we expect the automata's
-    properties to be disjoint. Third argument is the new initial state
+    properties to be disjoint. First argument is the new initial state
     to use for the resulting automaton. *)
-  val disjoint_union : t -> t -> state -> t
+  val disjoint_union : state -> t -> t -> t
   
   (** Sets the set of state Q used by the automaton
     to all the states used in the rules and the initial state. *)

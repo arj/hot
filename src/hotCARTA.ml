@@ -51,7 +51,7 @@ module type S = sig
 
   val equal : t -> t -> bool
 
-  val disjoint_union : t -> t -> state -> t
+  val disjoint_union : state -> t -> t -> t
 
   val update_q : t -> t
 
@@ -188,7 +188,7 @@ struct
     RuleSet.equal c1.rules c2.rules &&
     c1.q = c2.q
 
-  let disjoint_union cr1 cr2 qinitial =
+  let disjoint_union qinitial cr1 cr2 =
     {
       s = RankedAlphabet.union cr1.s cr2.s;
       qs = States.union cr1.qs cr2.qs;
