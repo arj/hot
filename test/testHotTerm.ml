@@ -339,7 +339,7 @@ let test_unify_bottom_bottom () =
     assert_equal ~printer:ures_pr exp out
 
 let test_unify_bottom_ctor () =
-  let exp = Bad(()) in
+  let exp = Ok([]) in
   let out = unify mkBottom @@ mkCtor c1 in
     assert_equal ~printer:ures_pr exp out
 
