@@ -55,8 +55,7 @@ RESULT  = higherOrderTools
 ANNOTATE = yes
 
 # make target (see manual) : byte-code, debug-code, native-code, ...
-all: byte-code-library
-	#native-code-library
+all: byte-code-library native-code-library
 
 DOC_FILES = $(SOURCES)
 
