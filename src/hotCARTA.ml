@@ -216,7 +216,8 @@ struct
 
   let drain_close carta =
     let (dom,ran) = RuleSet.get_states_dom_ran carta.rules in
-    let free_states = States.as_list @@ States.diff ran dom in
+    let ran_qs = States.union carta.qs ran in
+    let free_states = States.as_list @@ States.diff ran_qs dom in
     let star = Term.mkVar "*" in
     let rules = RuleSet.of_list @@ BatList.map (fun q -> (q,star,Term.Path.epsilon,mk_drain)) free_states in
       add_rules carta rules
