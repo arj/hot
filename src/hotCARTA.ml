@@ -56,6 +56,7 @@ module type S = sig
   val disjoint_union : state -> t -> t -> t
 
   val update_q : t -> t
+  val drain_close : t -> t
 
   val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
 end
@@ -212,6 +213,13 @@ struct
   let update_q c =
     let states = RuleSet.get_states c.rules in
       { c with qs = States.add c.q states }
+
+  let drain_close carta =
+    let (dom,ran) = RuleSet.get_states_dom_ran carta.rules in
+    let free_states = States.as_list @@ States.diff ran dom in
+    let star = Term.mkVar "*" in
+    let rules = RuleSet.of_list @@ BatList.map (fun q -> (q,star,Term.Path.epsilon,mk_drain)) free_states in
+      add_rules carta rules
 
   let accepts carta input =
     let open BatResult.Monad in

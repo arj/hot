@@ -106,6 +106,10 @@ module type S = sig
     to all the states used in the rules and the initial state. *)
   val update_q : t -> t
 
+  (** Adds drain states for all RHS states that have no transition
+    rules. *)
+  val drain_close : t -> t
+
   (** Checks if the CARTA accepts the given finite term.
     Acceptance is trivial, i.e. if every node in the input tree
     can be given a state consistent to the contexts and transitions
