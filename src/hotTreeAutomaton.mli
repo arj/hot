@@ -1,3 +1,19 @@
+module type RULES = sig
+  type t
+  type symbol
+  type elt = string * symbol * string list
+
+  val add : elt -> t -> t
+
+  val filter : (elt -> bool) -> t -> t
+
+  val of_list : elt list -> t
+
+  val as_list : t -> elt list
+
+  val string_of : t -> string
+end
+
 module type S = sig
 
   (* The abstract type representing the automaton. *)
@@ -8,34 +24,34 @@ module type S = sig
 
   type symbol
 
-  type rule = state * symbol * state list
+  type rule
 
   val create : state list -> symbol list -> rule list -> state -> t
 
   val add_rule : t -> rule -> t
 
-  val remove_rule : t -> rule -> t
-
-  val union : t -> t -> t
-
-  val intersection : t -> t -> t
-
   (** Returns all rules that have domain q *)
-  val by_q : t -> state -> rule
+  val by_q : t -> state -> rule list
 
   (** Returns all rules that have domain (q,t), where q is a state and t is a
     symbol.*)
-  val by_q_a : t -> state -> symbol -> rule
+  val by_q_a : t -> state -> symbol -> rule list
 
-  (** Checks if the tree automaton is valid. The exact definition
-    of validity is implementation dependant. *)
-  val is_valid : t -> bool
-
-  (** Checks if the given automaton is deterministic or not.
-    The exact definition of determinism is implementation dependant. *)
-  val is_deterministic : t -> bool
-
-  val string_of_rule : rule -> string
-
+  (** Returns a string representation of the automaton. *)
   val string_of : t -> string
 end
+
+module Make :
+  functor (RA : HotRankedAlphabet.S) ->
+    functor (Rules : RULES) ->
+      sig
+        type state = string
+        type symbol = RA.elt
+        type rule = Rules.elt
+        type t 
+        val create : state list -> symbol list -> rule list -> state -> t
+        val add_rule : t -> Rules.elt -> t
+        val by_q : t -> state -> rule list
+        val by_q_a : t -> state -> Rules.symbol -> rule list
+        val string_of : t -> string
+      end

@@ -34,6 +34,7 @@ SOURCES = \
 		  hotRankedAlphabet.mli \
 		  hotRankedAlphabet.ml \
 		  hotTreeAutomaton.mli \
+		  hotTreeAutomaton.ml \
 		  hotPMRS.mli \
 		  hotPMRS.ml \
 		  hotState.mli \
@@ -46,6 +47,7 @@ SOURCES = \
 		  hotCARTA.ml \
 		  hotSimple.mli \
 		  hotSimple.ml \
+		  hotNBA.ml \
 #		  hotHORS.mli \
 #		  hotHORS.ml \
 
