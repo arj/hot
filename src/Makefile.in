@@ -33,6 +33,7 @@ SOURCES = \
 		  hotTerm.ml \
 		  hotRankedAlphabet.mli \
 		  hotRankedAlphabet.ml \
+		  hotTreeAutomaton.mli \
 		  hotPMRS.mli \
 		  hotPMRS.ml \
 		  hotState.mli \
