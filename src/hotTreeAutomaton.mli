@@ -20,7 +20,7 @@ module type S = sig
   type t
 
   (* State representation *)
-  type state
+  type state = string
 
   type symbol
 

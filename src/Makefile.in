@@ -47,6 +47,7 @@ SOURCES = \
 		  hotCARTA.ml \
 		  hotSimple.mli \
 		  hotSimple.ml \
+		  hotNBA.mli \
 		  hotNBA.ml \
 #		  hotHORS.mli \
 #		  hotHORS.ml \
