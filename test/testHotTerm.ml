@@ -448,6 +448,7 @@ let test_is_suffix_false () =
     assert_bool "is_suffix should be false" @@ not @@ is_suffix inp suf
 
 (* length *)
+
 let test_path_length_empty () =
   let open Path in
     assert_equal 0 (length Empty)
@@ -455,6 +456,16 @@ let test_path_length_empty () =
 let test_path_length_ele () =
   let open Path in
     assert_equal 1 (length (Ele(c0,0,Empty)))
+
+(* is_empty *)
+
+let test_path_is_empty_empty () =
+  let open Path in
+    assert_bool "is_empty should be true" @@ is_empty Empty
+
+let test_path_is_empty_non_empty () =
+  let open Path in
+    assert_bool "is_empty should be false" @@ is_empty (Ele(c0,0,Empty))
 
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
@@ -538,6 +549,8 @@ let init_tests () =
    ("path is_suffix false", test_is_suffix_false);
    ("length empty", test_path_length_empty);
    ("length ele", test_path_length_ele);
+   ("is_empty empty", test_path_is_empty_empty);
+   ("is_empty ele", test_path_is_empty_non_empty);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests
