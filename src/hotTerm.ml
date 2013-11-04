@@ -85,7 +85,7 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
 
   let mkBottom = Bottom
 
-  let mkAppCtor c ts = mkApp (mkCtor c) ts
+  let mkAppCtor c ts = mkApp (mkCtor c) ts (*BISECT-IGNORE*)
 
   module Path = struct
     type termt = t
