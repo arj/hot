@@ -467,6 +467,12 @@ let test_path_is_empty_non_empty () =
   let open Path in
     assert_bool "is_empty should be false" @@ is_empty (Ele(c0,0,Empty))
 
+(* Path string_of (missing certain cases) *)
+
+let test_path_string_of_epsilon () =
+  let open Path in
+    assert_equal "{epsilon}" @@ string_of ~epsilon:true Empty
+
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
   [
@@ -551,6 +557,7 @@ let init_tests () =
    ("length ele", test_path_length_ele);
    ("is_empty empty", test_path_is_empty_empty);
    ("is_empty ele", test_path_is_empty_non_empty);
+   ("path string_of show epsilon", test_path_string_of_epsilon);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests
