@@ -343,6 +343,11 @@ let test_unify_bottom_ctor () =
   let out = unify mkBottom @@ mkCtor c1 in
     assert_equal ~printer:ures_pr exp out
 
+let test_unify_ctor_bottom () =
+  let exp = Ok([]) in
+  let out = unify (mkCtor c1) mkBottom in
+    assert_equal ~printer:ures_pr exp out
+
 let test_unify_app_app_fst_ok () =
   let exp = Ok([]) in
   let out = unify (mkApp (mkCtor c1) []) (mkApp (mkCtor c1) []) in
@@ -504,6 +509,7 @@ let init_tests () =
    ("unify var,ctor", test_unify_var_ctor);
    ("unify bottom,bottom", test_unify_bottom_bottom);
    ("unify bottom,ctor", test_unify_bottom_ctor);
+   ("unify ctor,bottom", test_unify_ctor_bottom);
    ("unify app,app fst ok", test_unify_app_app_fst_ok);
    ("unify app,app fst bad", test_unify_app_app_fst_bad);
    ("unify app,app snd ok", test_unify_app_app_snd_ok);
