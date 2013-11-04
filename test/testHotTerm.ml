@@ -428,6 +428,20 @@ let test_remove_suffix_suffix_too_long () =
   let out () = remove_suffix inp suf in
     assert_raises HotTerm.Path_not_found_in_term out
 
+(* is_suffix *)
+
+let test_is_suffix_true () =
+  let open Path in
+  let inp = Ele(b0,0,Ele(c0,0,Empty)) in
+  let suf = Ele(c0,0,Empty) in
+    assert_bool "is_suffix should be true" @@ is_suffix inp suf
+
+let test_is_suffix_false () =
+  let open Path in
+  let inp = Ele(c0,0,Empty) in
+  let suf = Ele(c0,0,Ele(c0,0,Empty)) in
+    assert_bool "is_suffix should be false" @@ not @@ is_suffix inp suf
+
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
   [
@@ -504,6 +518,8 @@ let init_tests () =
    ("path remove_suffix nonempty nonempty bad", test_remove_suffix_nonempty_path_nonempty_suffix_bad);
    ("path remove_suffix nonempty nonempty bad index", test_remove_suffix_nonempty_path_nonempty_suffix_bad_index);
    ("path remove_suffix suffix too long", test_remove_suffix_suffix_too_long);
+   ("path is_suffix true", test_is_suffix_true);
+   ("path is_suffix false", test_is_suffix_false);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests

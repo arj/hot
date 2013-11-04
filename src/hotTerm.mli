@@ -115,6 +115,9 @@ module type S = sig
       suffix exists, otherwise raises Path_not_found_in_term. *)
     val remove_suffix : t -> t -> t
 
+    (** Checks, if a path p has a suffix p', i.e.
+      [is_suffix path suffix]. *)
+    val is_suffix : t -> t -> bool
 
     (** Defines infix operators for some regularly used functions. *)
     module Infix : sig
@@ -209,6 +212,7 @@ sig
     val read : termt -> t -> termt
     val length : t -> int
     val remove_suffix : t -> t -> t
+    val is_suffix : t -> t -> bool
 
     module Infix : sig
       val (-->) : termt -> string -> t option

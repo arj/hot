@@ -33,6 +33,8 @@ SOURCES = \
 		 ../src/hotTerm.ml \
 		 ../src/hotRankedAlphabet.mli \
 		 ../src/hotRankedAlphabet.ml \
+         ../src/hotTreeAutomaton.mli \
+         ../src/hotTreeAutomaton.ml \
 		 ../src/hotPMRS.mli \
 		 ../src/hotPMRS.ml \
 		 ../src/hotState.mli \

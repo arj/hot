@@ -48,6 +48,8 @@ module type S = sig
 
     val remove_suffix : t -> t -> t
 
+    val is_suffix : t -> t -> bool
+
     module Infix : sig
       val (-->) : termt -> string -> t option
       val (-.) : termt -> t -> termt
