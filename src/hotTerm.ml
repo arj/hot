@@ -198,6 +198,12 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
       in
         inner path' suff'
 
+    let is_suffix p suff =
+      try
+        ignore @@ remove_suffix p suff;
+        true
+      with
+        Path_not_found_in_term -> false
 
     module Infix = struct
       let (-->) = path
@@ -293,4 +299,22 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | Bottom,_ -> return []
     | _,Bottom -> return []
     | _,_ -> Bad(())
+
+  let rec context_unification (t1,p1) (t2,p2) : ((string * t) list, unit)
+                                        BatResult.t =
+    let open Path in
+    let open Path.Infix in
+    if not (is_suffix p1 p2) && not (is_suffix p2 p1) then
+      Bad(())
+    else
+      if not (is_suffix p1 p2) then
+        context_unification (t2,p2) (t1,p1)
+      else
+        begin
+          (* We know that is_suffix p1 p2 holds, i.e.
+             p1 = p. p2 *)
+          let p = remove_suffix p1 p2 in
+          let t1' = t1 -. p in
+            unify t1' t2
+        end
 end
