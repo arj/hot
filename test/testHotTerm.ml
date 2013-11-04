@@ -447,6 +447,15 @@ let test_is_suffix_false () =
   let suf = Ele(c0,0,Ele(c0,0,Empty)) in
     assert_bool "is_suffix should be false" @@ not @@ is_suffix inp suf
 
+(* length *)
+let test_path_length_empty () =
+  let open Path in
+    assert_equal 0 (length Empty)
+
+let test_path_length_ele () =
+  let open Path in
+    assert_equal 1 (length (Ele(c0,0,Empty)))
+
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
   [
@@ -504,6 +513,7 @@ let init_tests () =
    ("depth app", test_depth_app);
    ("depth app bottom", test_depth_app_bottom);
    ("depth app bottom (app bottom)", test_depth_app_app_bottom);
+   ("depth bottom", test_depth_bottom);
    ("unify ctor,ctor", test_unify_ctor_ctor);
    ("unify ctor,var", test_unify_ctor_var);
    ("unify var,ctor", test_unify_var_ctor);
@@ -526,6 +536,8 @@ let init_tests () =
    ("path remove_suffix suffix too long", test_remove_suffix_suffix_too_long);
    ("path is_suffix true", test_is_suffix_true);
    ("path is_suffix false", test_is_suffix_false);
+   ("length empty", test_path_length_empty);
+   ("length ele", test_path_length_ele);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests
