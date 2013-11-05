@@ -172,6 +172,12 @@ module type S = sig
     or [Err(())] if not.
   *)
   val unify : t -> t -> ((string * t) list, unit) BatResult.t 
+
+  (** Unifies two contexts and corresponding paths. Denotationally we have
+    [context_unification (t1,p1) (t2,p2) = if p1 = p.p2 then unify (t1 -. p) t2]
+   *)
+  val context_unification : t * Path.t -> t * Path.t ->
+    ((string * t) list, unit) BatResult.t
 end
 
 (* TODO Write this using S! *)
@@ -228,4 +234,6 @@ sig
   val compare : t -> t -> int
   val vars : t -> (string * Path.t) list
   val unify : t -> t -> ((string * t) list, unit) BatResult.t 
+  val context_unification : t * Path.t -> t * Path.t ->
+    ((string * t) list, unit) BatResult.t
 end

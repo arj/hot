@@ -65,6 +65,8 @@ module type S = sig
   val compare : t -> t -> int
   val vars : t -> (string * Path.t) list
   val unify : t -> t -> ((string * t) list, unit) BatResult.t 
+  val context_unification : t * Path.t -> t * Path.t ->
+    ((string * t) list, unit) BatResult.t
 end
 
 module Make = functor (RA : HotRankedAlphabet.S) -> struct

@@ -22,6 +22,14 @@ let b1 = ("B", Sort.create_n 1)
 let b0 = ("B", Sort.create_n 0)
 let d1 = ("D", Sort.create_n 1)
 let zero = ("zero",Sort.base)
+let succ = ("succ", Sort.create_n 1)
+let nil = ("nil",Sort.base)
+let cons = ("cons", Sort.create_n 2)
+
+let mk_cons a b = mkAppCtor cons [a;b]
+let mk_nil = mkCtor nil
+let mk_zero = mkCtor zero
+let mk_succ a = mkAppCtor succ [a]
 
 (* path *)
 
@@ -465,13 +473,53 @@ let test_path_is_empty_empty () =
 
 let test_path_is_empty_non_empty () =
   let open Path in
-    assert_bool "is_empty should be false" @@ is_empty (Ele(c0,0,Empty))
+    assert_bool "is_empty should be false" @@ not @@ is_empty (Ele(c0,0,Empty))
 
 (* Path string_of (missing certain cases) *)
 
 let test_path_string_of_epsilon () =
   let open Path in
     assert_equal "{epsilon}" @@ string_of ~epsilon:true Empty
+
+(* context unification *)
+
+let test_context_unification_same () =
+  let open Path in
+  let t1 = mkVar "x" in
+  let p1 = Empty in
+  let t2 = mkCtor c0 in
+  let p2 = Empty in
+  let res = context_unification (t1,p1) (t2,p2) in
+    assert_bool "context_unification should succeed" @@ BatResult.is_ok res
+
+let tp1_tp2 =
+  let open Path in
+  let t1 = mk_cons mk_zero @@ mk_cons (mk_succ mk_zero) (mk_cons mk_zero @@ mkVar "y") in
+  let p1 = Ele(cons,1,Ele(cons,1,Empty)) in
+  let t2 = mk_cons (mkVar "z") @@ mk_cons (mkVar "x") (mk_nil) in
+  let p2 = Ele(cons,1,Empty) in
+    ((t1,p1),(t2,p2))
+
+let test_context_unification_t1_in_t2 () =
+  let tp1,tp2 = tp1_tp2 in
+  let res = context_unification tp1 tp2 in
+    assert_bool "context_unification should succeed" @@ BatResult.is_ok res
+
+let test_context_unification_t2_in_t1 () =
+  let tp1,tp2 = tp1_tp2 in
+  let res = context_unification tp2 tp1 in
+    assert_bool "context_unification should succeed" @@ BatResult.is_ok res
+
+let test_context_unification_no_suffix () =
+  let open Path in
+  let t1 = mkVar "x" in
+  let p1 = Ele(c0,0,Empty) in
+  let t2 = mkCtor c0 in
+  let p2 = Ele(c1,0,Empty) in
+  let res = context_unification (t1,p1) (t2,p2) in
+    assert_bool "context_unification should not succeed" @@ BatResult.is_bad res
+
+
 
 (* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
@@ -558,6 +606,10 @@ let init_tests () =
    ("is_empty empty", test_path_is_empty_empty);
    ("is_empty ele", test_path_is_empty_non_empty);
    ("path string_of show epsilon", test_path_string_of_epsilon);
+   ("context unification same", test_context_unification_same);
+   ("context unification t1 in t2", test_context_unification_t1_in_t2);
+   ("context unification t2 in t1", test_context_unification_t2_in_t1);
+   ("context unification no suffix", test_context_unification_no_suffix);
   ]
 
 let _ = install_tests_new "HotTerm" init_tests
