@@ -59,6 +59,9 @@ module type S = sig
   val drain_close : t -> t
 
   val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
+
+  val get_conflicted_transitions : t -> RuleSet.t
+  val conflict_free : t -> t
 end
 
 (*TODO Abstract to general tree automaton? *)
@@ -283,6 +286,37 @@ struct
     in
       accepts_inner Term.Path.epsilon carta.q
 
+  let get_conflicted_transitions ca =
+    let open Term.Path in
+    let open Term.Path.Infix in
+    (* Check, which states/transitions are NOT conflict free *)
+    let has_child_conflict (q,t,p,qs) =
+      (* Fetch all child transitions and check if their contexts are unifiable with
+       the current context. *)
+      let check_unification i t' p' =
+        match t -. p with
+          | Term.App(Term.Ctor(c),_) ->
+               BatResult.is_ok @@ Term.context_unification (t,append p (Ele(c,i,Empty))) (t',p')
+          | _ -> failwith "Unexpected behavior, please report." (*BISECT-IGNORE*)
+      in
+      match qs with
+        | SDrain -> false (* Drain states are not conflicted *)
+        | SStates(qs') ->
+            let f i q =
+              let delta_q_i = RuleSet.as_list @@ get_transitions ca q in
+                BatList.map (fun (_,ti,pi,_) -> check_unification i ti pi) delta_q_i
+            in
+            let result = BatList.concat @@ BatList.mapi f qs' in
+              BatList.exists (fun x -> x = false) result
+    in
+      RuleSet.filter has_child_conflict ca.rules
+
+
+  let conflict_free (ca : t) : t =
+    (* Fetch conflicting transitions *)
+    let trans = get_conflicted_transitions ca in
+      (* Remove them, and all single predecessors *)
+      failwith "Not yet implemented"
 
     (* Transformation *)
   module NBA : HotTreeAutomaton.S = struct

@@ -110,16 +110,24 @@ module type S = sig
     rules. *)
   val drain_close : t -> t
 
-  (** Checks if the CARTA accepts the given finite term.
+  (** Checks if the caRTA accepts the given finite term.
     Acceptance is trivial, i.e. if every node in the input tree
     can be given a state consistent to the contexts and transitions
     it accepts.
     Result is either Ok or the path in the term that fails.
   *)
   val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
+
+  (** Returns all transition rules that have a conflict with their
+    successor states. *)
+  val get_conflicted_transitions : t -> RuleSet.t
+
+  (** Returns a conflict-free version of the given caRTA that
+    accepts the same language. *)
+  val conflict_free : t -> t
 end
 
-(** Create an instance of a CARTA using a state representation
+(** Create an instance of a caRTA using a state representation
   and a ranked alphabet representation. *)
 module Make : functor (Elt : HotInterfaces.ORDEREDPRINTABLE) -> 
       functor (Type : HotType.S) -> S

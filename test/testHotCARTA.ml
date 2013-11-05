@@ -25,6 +25,9 @@ let mkFoo = mkCtor foo
 let mkSucc a = mkApp (mkCtor succ) [a]
 let mkPair a b = mkApp (mkCtor pair) [a;b]
 
+let q0 = State.singleton ("0",Term.Path.Empty)
+let q1 = State.singleton ("1",Term.Path.Empty)
+
 (* accepts *)
 
 (* A CARTA that accepts one element only. *)
@@ -204,6 +207,55 @@ let test_accept_ctxt_7_bad () =
   let term = mkPair mkFoo mkZero in
     test_accept_bad carta_ctxt_2 term
 
+(* get_conflicting_transitions *)
+
+let mk_carta_delta delta =
+  create RankedAlphabet.empty States.empty delta
+    State.empty
+
+let test_get_conflicting_transitions_none () =
+  let open Term.Path in
+  let delta = RuleSet.of_list
+                [
+                  (q0,mkSucc @@ mkVar "x", Empty, SStates([q1]));
+                  (q1,mkSucc @@ mkVar "*", Ele(succ,0,Empty), SDrain)
+                ]
+  in
+  let carta = mk_carta_delta delta in
+  let res = get_conflicted_transitions carta in
+    assert_bool
+      "Set of conflicting transitions should be empty"
+      (RuleSet.is_empty res)
+
+let test_get_conflicting_transitions_none_smaller () =
+  let open Term.Path in
+  let delta = RuleSet.of_list
+                [
+                  (q0,mkSucc @@ mkVar "x", Empty, SStates([q1]));
+                  (q1,mkZero, Empty, SStates([]))
+                ]
+  in
+  let carta = mk_carta_delta delta in
+  let res = get_conflicted_transitions carta in
+    print_endline @@ RuleSet.string_of res;
+    assert_bool
+      "Set of conflicting transitions should be empty"
+      (RuleSet.is_empty res)
+
+let test_get_conflicting_transitions_one () =
+  let open Term.Path in
+  let delta = RuleSet.of_list
+                [
+                  (q0,mkSucc @@ mkVar "x", Empty, SStates([q1]));
+                  (q1,mkPair (mkVar "y") @@ mkZero, Ele(pair,0,Empty), SStates([]))
+                ]
+  in
+  let carta = mk_carta_delta delta in
+  let res = get_conflicted_transitions carta in
+    assert_bool
+      "Set of conflicting transitions must not be empty"
+      (not @@ RuleSet.is_empty res)
+
 let init_tests () =
   [
    ("accept zero ok", test_accept_zero_ok);
@@ -225,6 +277,9 @@ let init_tests () =
    ("accept context-dependant drain 5 ok", test_accept_ctxt_5_ok);
    ("accept context-dependant drain 6 bad", test_accept_ctxt_6_bad);
    ("accept context-dependant drain 7 bad", test_accept_ctxt_7_bad);
+   ("get_conflicting_transitions none", test_get_conflicting_transitions_none);
+   ("get_conflicting_transitions none smaller", test_get_conflicting_transitions_none_smaller);
+   ("get_conflicting_transitions one", test_get_conflicting_transitions_one);
   ]
 
 let _ = install_tests_new "HotCARTA" init_tests
