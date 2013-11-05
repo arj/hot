@@ -33,27 +33,27 @@ let mk_succ a = mkAppCtor succ [a]
 
 (* path *)
 
-let test_path_1 () =
+let test_path_none () =
   let exp = None in
   let out = Path.path (mkVar "y") "x" in
     assert_equal ~printer:(prnt) exp out
 
-let test_path_2 () =
+let test_path_epsilon () =
   let exp = Some HotPath.epsilon in
   let out = Path.path (mkVar "x") "x" in
     assert_equal ~printer:(prnt) exp out
 
-let test_path_3 () =
+let test_path_app_none () =
   let exp = None in
   let out = Path.path (mkApp (mkCtor ("C",Sort.create_n 1)) [mkVar "y"]) "x" in
     assert_equal ~printer:(prnt) exp out
 
-let test_path_4 () =
+let test_path_app_some () =
   let exp = Some(HotPath.Ele(c1,0,HotPath.Empty)) in
   let out = Path.path (mkApp (mkCtor c1) [mkVar "x"]) "x" in
     assert_equal ~printer:(prnt) exp out
 
-let test_path_5 () =
+let test_path_nested_some () =
   let exp = Some(HotPath.Ele(c1, 0,HotPath.Ele(c1,1,HotPath.Empty))) in
   let out = Path.path (mkApp (mkCtor c1)
                        [mkApp (mkCtor c1)
@@ -93,45 +93,45 @@ let test_path_app_app () =
 
 (* subst_path *)
 
-let test_subst_path_1 () =
+let test_subst_path_empty_bottom () =
   let exp = mkVar "x" in
   let out = Path.subst_path HotPath.epsilon (mkVar "x") mkBottom in
     assert_equal ~printer:string_of exp out
 
-let test_subst_path_2 () =
+let test_subst_path_empty_app () =
   let exp = mkVar "x" in
   let out = Path.subst_path HotPath.epsilon (mkVar "x")
               (mkApp(mkCtor ("C",Sort.create_n 1)) [mkVar "y"]) in
     assert_equal ~printer:string_of exp out
 
-let test_subst_path_3 () =
+let test_subst_path_empty_var () =
   let exp = mkVar "x" in
   let out = Path.subst_path HotPath.epsilon (mkVar "x")
               (mkVar "y") in
     assert_equal exp out
 
-let test_subst_path_4 () =
+let test_subst_path_ele_not_found_bottom () =
   let f () = Path.subst_path (HotPath.Ele(("C", Sort.create_n 1),1,HotPath.epsilon)) mkBottom mkBottom in
     assert_raises HotTerm.Path_not_found_in_term f
 
-let test_subst_path_5 () =
+let test_subst_path_ele_not_found_var () =
   let f ()  = Path.subst_path (HotPath.Ele(("C", Sort.create_n 1),1,HotPath.epsilon)) mkBottom (mkVar "x") in
     assert_raises HotTerm.Path_not_found_in_term f
 
-let test_subst_path_6 () = 
+let test_subst_path_ele_not_found_app () = 
   let f () = Path.subst_path (HotPath.Ele(("C",Sort.create_n 1),1,HotPath.epsilon)) mkBottom (mkApp (mkCtor ("A",Sort.create_n 1)) []) in
     assert_raises HotTerm.Path_not_found_in_term f
 
-let test_subst_path_7 () =
+let test_subst_path_ele_app_var () =
   let exp = mkApp (mkCtor("C",Sort.create_n 1)) [mkBottom] in
   let out = Path.subst_path (HotPath.Ele(("C", Sort.create_n 1),0,HotPath.epsilon)) mkBottom (mkApp (mkCtor("C",Sort.create_n 1)) [mkVar "x"]) in
     assert_equal ~printer:string_of exp out
 
-let test_subst_path_8 () =
+let test_subst_path_ele_app_wrong_index () =
   let f () = Path.subst_path (HotPath.Ele(("C",Sort.create_n 1), 1,HotPath.epsilon)) mkBottom (mkApp (mkCtor("C",Sort.create_n 1)) [mkVar "x"]) in
     assert_raises HotTerm.Path_not_found_in_term f
 
-let test_subst_path_9 () =
+let test_subst_path_complex_example () =
   let c = ("C",Sort.create_n 3) in
   let d = ("D",Sort.create_n 3) in
   let e = ("E",Sort.create_n 1) in
@@ -148,45 +148,44 @@ let test_subst_path_ctor_epsilon () =
 
 (* read *)
 
-let test_read_1 () =
+let test_read_empty () =
   let out = Path.read (mkVar "x") HotPath.Empty in
   let exp = mkVar "x" in
     assert_equal ~printer:string_of exp out
 
-let test_read_2 () =
+let test_read_not_found () =
   let f () = Path.read (mkVar "x") (HotPath.Ele(c1,1,HotPath.Empty)) in
     assert_raises HotTerm.Path_not_found_in_term f
 
-let test_read_3 () =
+let test_read_app () =
   let out = Path.read (mkApp (mkCtor c1) [mkVar "x"]) (HotPath.Ele(c1,0,HotPath.Empty)) in
   let exp = mkVar "x" in
     assert_equal ~printer:string_of exp out
 
-let test_read_4 () =
+let test_read_app_wrong_index () =
   let f () = Path.read (mkApp (mkCtor c1) [mkVar "x"]) (HotPath.Ele(c1,1,HotPath.Empty)) in
     assert_raises HotTerm.Path_not_found_in_term f
 
-let test_read_5 () =
+let test_read_app_wrong_ctor() =
   let f () = Path.read (mkApp (mkCtor d1) [mkVar "x"]) (HotPath.Ele(c1,0,HotPath.Empty)) in
     assert_raises HotTerm.Path_not_found_in_term f
 
-let test_read_6 () =
+let test_read_app_nested_1 () =
   let out = Path.read (mkApp (mkCtor c1) [mkVar "y"; mkApp (mkCtor c1) [mkVar "x"]]) (HotPath.Ele(c1,0,HotPath.Empty)) in
   let exp = mkVar "y" in
     assert_equal ~printer:string_of exp out
 
-let test_read_7 () =
+let test_read_app_nested_2 () =
   let out = Path.read (mkApp (mkCtor c2) [mkVar "y";mkApp (mkCtor d1) [mkVar "x"]]) (HotPath.Ele(c2,1,HotPath.Ele(d1,0,HotPath.Empty))) in
   let exp = mkVar "x" in
     assert_equal ~printer:string_of exp out
 
-(* TODO Shouldn't the first ctor be a c2? *)
-let test_read_8 () =
+let test_read_app_nested_wrong_ctor () =
   let f () = Path.read (mkApp (mkCtor c1) [mkVar "y";mkApp (mkCtor d1) [mkVar "x"]]) (HotPath.Ele(c1,1,HotPath.Ele(d1,1,HotPath.Empty))) in
     assert_raises HotTerm.Path_not_found_in_term f
 
 (* Similar to test_read_8 but with infix syntax *)
-let test_read_9 () =
+let test_read_infix () =
   let f () = (mkApp (mkCtor c1) [mkVar "y";mkApp (mkCtor d1) [mkVar "x"]]) -. (HotPath.Ele(c1,1,HotPath.Ele(d1,1,HotPath.Empty))) in
     assert_raises HotTerm.Path_not_found_in_term f
 
@@ -519,41 +518,38 @@ let test_context_unification_no_suffix () =
   let res = context_unification (t1,p1) (t2,p2) in
     assert_bool "context_unification should not succeed" @@ BatResult.is_bad res
 
-
-
-(* TODO Rename tests. Numbered tests are not meaningful... *)
 let init_tests () =
   [
-   ("subst_path 1", test_subst_path_1);
-   ("subst_path 2", test_subst_path_2);
-   ("subst_path 3", test_subst_path_3);
-   ("subst_path 4", test_subst_path_4);
-   ("subst_path 5", test_subst_path_5);
-   ("subst_path 6", test_subst_path_6);
-   ("subst_path 7", test_subst_path_7);
-   ("subst_path 8", test_subst_path_8);
-   ("subst_path 9", test_subst_path_9);
+   ("subst_path empty bottom", test_subst_path_empty_bottom);
+   ("subst_path empty app", test_subst_path_empty_app);
+   ("subst_path empty var", test_subst_path_empty_var);
+   ("subst_path ele not found bottom", test_subst_path_ele_not_found_bottom);
+   ("subst_path ele not found var", test_subst_path_ele_not_found_var);
+   ("subst_path ele not found app", test_subst_path_ele_not_found_app);
+   ("subst_path ele app var", test_subst_path_ele_app_var);
+   ("subst_path ele app wrong index", test_subst_path_ele_app_wrong_index);
+   ("subst_path complex example", test_subst_path_complex_example);
    ("subst_path ctor epsilon", test_subst_path_ctor_epsilon);
-   ("path 1", test_path_1);
-   ("path 2", test_path_2);
-   ("path 3", test_path_3);
-   ("path 4", test_path_4);
-   ("path 5", test_path_5);
+   ("path none", test_path_none);
+   ("path epsilon", test_path_epsilon);
+   ("path app none", test_path_app_none);
+   ("path app some", test_path_app_some);
+   ("path nested some", test_path_nested_some);
    ("path bottom", test_path_bottom);
    ("path ctor", test_path_ctor);
    ("path app var", test_path_app_var);
    ("path app app app var", test_path_app_app_app_var);
    ("path app bottom", test_path_app_bottom);
    ("path app app", test_path_app_app);
-   ("read 1", test_read_1);
-   ("read 2", test_read_2);
-   ("read 3", test_read_3);
-   ("read 4", test_read_4);
-   ("read 5", test_read_5);
-   ("read 6", test_read_6);
-   ("read 7", test_read_7);
-   ("read 8", test_read_8);
-   ("read 9", test_read_9);
+   ("read empty", test_read_empty);
+   ("read not found", test_read_not_found);
+   ("read app", test_read_app);
+   ("read app wrong index", test_read_app_wrong_index);
+   ("read app wrong ctor", test_read_app_wrong_ctor);
+   ("read app nested 1", test_read_app_nested_1);
+   ("read app nested 2", test_read_app_nested_2);
+   ("read app nested wrong ctor", test_read_app_nested_wrong_ctor);
+   ("read infix", test_read_infix);
    ("subst in var", test_subst_in_var);
    ("subst in ctor", test_subst_in_ctor);
    ("subst not present", test_subst_not_present);
