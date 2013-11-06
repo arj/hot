@@ -18,12 +18,14 @@ let nil = ("nil", o)
 let foo = ("foo", o)
 let succ = ("succ", o ^=> o)
 let pair = ("pair", o ^=> o ^=> o)
+let unary = ("unary", o ^=> o)
 
 let mkZero = mkCtor zero
 let mkNil = mkCtor nil
 let mkFoo = mkCtor foo
 let mkSucc a = mkApp (mkCtor succ) [a]
 let mkPair a b = mkApp (mkCtor pair) [a;b]
+let mkUnary a = mkApp (mkCtor unary) [a]
 
 let q0 = State.singleton ("0",Term.Path.Empty)
 let q1 = State.singleton ("1",Term.Path.Empty)
@@ -213,16 +215,19 @@ let mk_carta_delta delta =
   create RankedAlphabet.empty States.empty delta
     State.empty
 
-let test_get_conflicting_transitions_none () =
+let carta_no_conflict =
   let open Term.Path in
   let delta = RuleSet.of_list
                 [
                   (q0,mkSucc @@ mkVar "x", Empty, SStates([q1]));
-                  (q1,mkSucc @@ mkVar "*", Ele(succ,0,Empty), SDrain)
+                  (q1,mkSucc mkZero, Ele(succ,0,Empty), SStates([]))
                 ]
   in
-  let carta = mk_carta_delta delta in
-  let res = get_conflicted_transitions carta in
+    mk_carta_delta delta
+
+let test_get_conflicting_transitions_none () =
+  let open Term.Path in
+  let res = get_conflicted_transitions carta_no_conflict in
     assert_bool
       "Set of conflicting transitions should be empty"
       (RuleSet.is_empty res)
@@ -237,7 +242,6 @@ let test_get_conflicting_transitions_none_smaller () =
   in
   let carta = mk_carta_delta delta in
   let res = get_conflicted_transitions carta in
-    print_endline @@ RuleSet.string_of res;
     assert_bool
       "Set of conflicting transitions should be empty"
       (RuleSet.is_empty res)
@@ -255,6 +259,27 @@ let test_get_conflicting_transitions_one () =
     assert_bool
       "Set of conflicting transitions must not be empty"
       (not @@ RuleSet.is_empty res)
+
+(* conflict-free *)
+
+let test_conflict_free_no_conflict () =
+  let open Term.Path in
+  let open HotSimple.SimpleCARTA in
+  let res = conflict_free carta_no_conflict in
+    assert_equal ~cmp:equal ~printer:string_of carta_no_conflict res
+
+let test_conflict_free_partial_conflict () =
+  let open Term.Path in
+  let open HotSimple.SimpleCARTA in
+  let delta = RuleSet.of_list
+                [
+                  (q1,mkUnary mkZero, Ele(foo,0,Empty), SStates([]));
+                ]
+  in
+  let carta = add_rules carta_no_conflict delta in
+  let res = conflict_free carta in
+    assert_equal ~cmp:equal ~printer:string_of carta_no_conflict res
+
 
 let init_tests () =
   [
@@ -280,6 +305,8 @@ let init_tests () =
    ("get_conflicting_transitions none", test_get_conflicting_transitions_none);
    ("get_conflicting_transitions none smaller", test_get_conflicting_transitions_none_smaller);
    ("get_conflicting_transitions one", test_get_conflicting_transitions_one);
+   ("conflict_free no conflict", test_conflict_free_no_conflict);
+   ("conflict_free partial conflict", test_conflict_free_partial_conflict);
   ]
 
 let _ = install_tests_new "HotCARTA" init_tests
