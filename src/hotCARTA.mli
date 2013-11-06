@@ -24,7 +24,10 @@ module type S = sig
   type state = State.t
 
   (** A set of states create from the state representation. *)
-  module States : HotExtBatSet.S with type elt = state
+  module States : sig
+    include HotExtBatSet.S with type elt = state
+    val string_of : t -> string
+  end
 
   (** Distinguishes between drain states or normal
     resulting states. *)
@@ -64,8 +67,11 @@ module type S = sig
   (** Fetches all transitions with some start state. *)
   val get_transitions : t -> state -> RuleSet.t
 
-  (** Fetches all rules. *)
+  (** Fetches all transitions. *)
   val get_rules : t -> RuleSet.t
+
+  (** Sets new transitions. *)
+  val set_rules : t -> RuleSet.t -> t
 
   (** Filters rules in a CARTA according to a predicate. *)
   val filter_rules : t -> (rule -> bool) -> t

@@ -12,7 +12,10 @@ module type S = sig
 
   type state = State.t
 
-  module States : HotExtBatSet.S with type elt = state
+  module States : sig
+    include HotExtBatSet.S with type elt = state
+    val string_of : t -> string
+  end
 
   type state_t =
     | SDrain
@@ -36,6 +39,7 @@ module type S = sig
   val add_rules : t -> RuleSet.t -> t
   val get_transitions : t -> state -> RuleSet.t
   val get_rules : t -> RuleSet.t
+  val set_rules : t -> RuleSet.t -> t
   val filter_rules : t -> (rule -> bool) -> t
 
   val string_of_state : state -> string
@@ -79,7 +83,6 @@ struct
 
   type state = State.t
 
-  module States = HotExtBatSet.Make(struct type t = state let compare = State.compare end)
 
   type state_t =
     | SDrain
@@ -102,6 +105,16 @@ struct
       State.print ~first:fst ~last:lst ~sep:(",")
         (fun out r -> BatIO.nwrite out (string_of_state_internal r)) io ss;
       BatIO.close_out io
+
+  module States = struct
+    include HotExtBatSet.Make(struct type t = state let compare = State.compare end)
+
+    let string_of states =
+      let io = BatIO.output_string () in
+        print ~sep:(",")
+          (fun out q -> BatIO.nwrite out (string_of_state q)) io states;
+        BatIO.close_out io
+  end
 
   type rule = state * Term.t * Term.Path.t * state_t
 
@@ -170,16 +183,15 @@ struct
 
   let get_rules carta = carta.rules
 
+  let set_rules carta r =
+    { carta with rules = r }
+
   let filter_rules carta p =
     {carta with rules = RuleSet.filter p carta.rules}
 
   let string_of carta =
       let s_string = RankedAlphabet.string_of carta.s  in
-      let qs_string =
-        let io = BatIO.output_string () in
-          States.print ~sep:(",")
-            (fun out s -> BatIO.nwrite out (string_of_state s)) io carta.qs;
-          BatIO.close_out io in
+      let qs_string = States.string_of carta.qs in
       let r_string = BatString.concat "\n" @@ BatList.map string_of_rule @@ RuleSet.as_list carta.rules in
       let q_string = string_of_state carta.q in
         Printf.sprintf "<%s,%s,\n%s,\n%s>"
