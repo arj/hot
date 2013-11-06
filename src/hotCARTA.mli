@@ -124,6 +124,14 @@ module type S = sig
   *)
   val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
 
+  (** Calculates all predecessor transitions for a given
+    transition within a given carta. *)
+  val pre_transitions : t -> RuleSet.elt -> RuleSet.t
+
+  (** Calculates all successor transitions for a given
+    transition within a given carta. *)
+  val post_transitions : t -> RuleSet.elt -> RuleSet.t
+
   (** Returns all transition rules that have a conflict with their
     successor states. *)
   val get_conflicted_transitions : t -> RuleSet.t

@@ -64,6 +64,9 @@ module type S = sig
 
   val accepts : t -> Term.t -> (unit,Term.Path.t) BatResult.t
 
+  val pre_transitions : t -> RuleSet.elt -> RuleSet.t
+  val post_transitions : t -> RuleSet.elt -> RuleSet.t
+
   val get_conflicted_transitions : t -> RuleSet.t
   val conflict_free : t -> t
 end
@@ -298,6 +301,21 @@ struct
     in
       accepts_inner Term.Path.epsilon carta.q
 
+  let pre_transitions carta r =
+    let (q,_,_,_) = r in
+    let f (_,_,_,qs) = match qs with
+      | SDrain -> false
+      | SStates(qs') -> BatList.exists (fun q' -> q = q') qs'
+    in
+      RuleSet.filter f carta.rules
+
+  let post_transitions carta r =
+    let (_,_,_,qs) = r in
+      match qs with
+        | SDrain -> RuleSet.empty
+        | SStates(qs') ->
+            RuleSet.union_all @@ BatList.map (get_transitions carta) qs'
+
   let get_conflicted_transitions ca =
     let open Term.Path in
     let open Term.Path.Infix in
@@ -322,7 +340,6 @@ struct
               BatList.exists (fun x -> x = false) result
     in
       RuleSet.filter has_child_conflict ca.rules
-
 
   let conflict_free (ca : t) : t =
     (* Fetch conflicting transitions *)
