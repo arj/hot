@@ -66,6 +66,7 @@ module type S = sig
 
   val pre_transitions : t -> RuleSet.elt -> RuleSet.t
   val post_transitions : t -> RuleSet.elt -> RuleSet.t
+  val transition_unification : int -> RuleSet.elt -> RuleSet.elt -> bool
 
   val get_conflicted_transitions : t -> RuleSet.t
   val conflict_free : t -> t
@@ -315,6 +316,9 @@ struct
         | SDrain -> RuleSet.empty
         | SStates(qs') ->
             RuleSet.union_all @@ BatList.map (get_transitions carta) qs'
+
+  let transition_unification i d1 d2 : bool =
+    failwith "Not yet implemented"
 
   let get_conflicted_transitions ca =
     let open Term.Path in

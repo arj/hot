@@ -132,6 +132,11 @@ module type S = sig
     transition within a given carta. *)
   val post_transitions : t -> RuleSet.elt -> RuleSet.t
 
+  (** Transition unficiation checks if given a transition rule d1 and a
+    transition rule d2 if for an element i within the context of d1 the
+    p-contexts are unifiable. *)
+  val transition_unification : int -> RuleSet.elt -> RuleSet.elt -> bool
+
   (** Returns all transition rules that have a conflict with their
     successor states. *)
   val get_conflicted_transitions : t -> RuleSet.t

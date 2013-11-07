@@ -326,6 +326,31 @@ let test_conflict_free_partial_conflict () =
   let res = conflict_free carta in
     assert_equal ~cmp:equal ~printer:string_of carta_no_conflict res
 
+(* transition_unification *)
+
+let test_transition_unification_degen () =
+  let open Term.Path in
+  let i = 0 in
+  let d1 = (q0, mkSucc @@ mkVar "x", Ele(succ,i,Empty), SDrain) in
+  let d2 = d1 in
+  let res = transition_unification i d1 d2 in
+    assert_bool "Unification expected to be successfull!" res
+
+let test_transition_unification () =
+  let open Term.Path in
+  let i = 0 in
+  let d1 = (q0, mkSucc @@ mkVar "x", Empty, SStates([q0])) in
+  let d2 = (q0, mkSucc @@ mkZero, Ele(succ,i,Empty), SDrain) in
+  let res = transition_unification i d1 d2 in
+    assert_bool "Unification expected to be successfull!" res
+
+let test_transition_unification_impossible () =
+  let open Term.Path in
+  let i = 0 in
+  let d1 = (q0, mkSucc @@ mkVar "x", Empty, SStates([q0])) in
+  let d2 = (q0, mkUnary @@ mkZero, Ele(unary,i,Empty), SDrain) in
+  let res = transition_unification i d1 d2 in
+    assert_bool "Unification expected to be successfull!" res
 
 let init_tests () =
   [
@@ -357,6 +382,9 @@ let init_tests () =
    ("get_conflicting_transitions one", test_get_conflicting_transitions_one);
    ("conflict_free no conflict", test_conflict_free_no_conflict);
    ("conflict_free partial conflict", test_conflict_free_partial_conflict);
+   ("transition_unification degenerate", test_transition_unification_degen);
+   ("transition_unification", test_transition_unification);
+   ("transition_unification impossible", test_transition_unification_impossible);
   ]
 
 let _ = install_tests_new "HotCARTA" init_tests
