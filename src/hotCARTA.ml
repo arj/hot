@@ -317,8 +317,13 @@ struct
         | SStates(qs') ->
             RuleSet.union_all @@ BatList.map (get_transitions carta) qs'
 
-  let transition_unification i d1 d2 : bool =
-    failwith "Not yet implemented"
+  let transition_unification i (_,t1,p1,_) (_,t2,p2,_) : bool =
+    let open Term.Path in
+    let open Term.Path.Infix in
+    match t1 -. p1 with
+      | Term.App(Term.Ctor(c),_) ->
+          BatResult.is_ok @@ Term.context_unification (t1, append p1 (Ele(c,i,Empty))) (t2,p2)
+      | _ -> false
 
   let get_conflicted_transitions ca =
     let open Term.Path in

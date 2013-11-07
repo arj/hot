@@ -331,8 +331,8 @@ let test_conflict_free_partial_conflict () =
 let test_transition_unification_degen () =
   let open Term.Path in
   let i = 0 in
-  let d1 = (q0, mkSucc @@ mkVar "x", Ele(succ,i,Empty), SDrain) in
-  let d2 = d1 in
+  let d1 = (q0, mkSucc @@ mkSucc @@ mkVar "x", Ele(succ,0,Empty), SDrain) in
+  let d2 = (q0, mkSucc @@ mkVar "x", Ele(succ,0,Empty), SDrain) in
   let res = transition_unification i d1 d2 in
     assert_bool "Unification expected to be successfull!" res
 
@@ -350,7 +350,7 @@ let test_transition_unification_impossible () =
   let d1 = (q0, mkSucc @@ mkVar "x", Empty, SStates([q0])) in
   let d2 = (q0, mkUnary @@ mkZero, Ele(unary,i,Empty), SDrain) in
   let res = transition_unification i d1 d2 in
-    assert_bool "Unification expected to be successfull!" res
+    assert_bool "Unification expected to be not successfull!" @@ not res
 
 let init_tests () =
   [
