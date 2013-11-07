@@ -30,6 +30,21 @@ let mkUnary a = mkApp (mkCtor unary) [a]
 let q0 = State.singleton ("0",Term.Path.Empty)
 let q1 = State.singleton ("1",Term.Path.Empty)
 
+let mk_carta_delta delta =
+  create RankedAlphabet.empty States.empty delta
+    State.empty
+
+let carta_no_conflict =
+  let open Term.Path in
+  let delta = RuleSet.of_list
+                [
+                  (q0,mkSucc @@ mkVar "x", Empty, SStates([q1]));
+                  (q1,mkSucc mkZero, Ele(succ,0,Empty), SStates([]))
+                ]
+  in
+    mk_carta_delta delta
+
+
 (* accepts *)
 
 (* A CARTA that accepts one element only. *)
@@ -42,7 +57,7 @@ let carta_zero =
     create sigma states rules q
 
 (** A CARTA that accepts numbers, i.e. zero/succ lists *)
-let carta_number = 
+let carta_number =
   let sigma = RA.of_list [zero;succ] in
   let q = mk_state_1 ("f",P.epsilon) in
   let states = States.singleton q in
@@ -209,21 +224,52 @@ let test_accept_ctxt_7_bad () =
   let term = mkPair mkFoo mkZero in
     test_accept_bad carta_ctxt_2 term
 
-(* get_conflicting_transitions *)
+(* pre transitions *)
 
-let mk_carta_delta delta =
-  create RankedAlphabet.empty States.empty delta
-    State.empty
-
-let carta_no_conflict =
+let test_pre_transitions () =
   let open Term.Path in
+  let d1 = (q1,mkSucc @@ mkVar "x", Empty, SStates([q1])) in
   let delta = RuleSet.of_list
                 [
                   (q0,mkSucc @@ mkVar "x", Empty, SStates([q1]));
-                  (q1,mkSucc mkZero, Ele(succ,0,Empty), SStates([]))
+                  d1
                 ]
   in
-    mk_carta_delta delta
+  let carta = mk_carta_delta delta in
+  let res = pre_transitions carta d1 in
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res delta
+
+let test_pre_transitions_drain () =
+  let open Term.Path in
+  let d1 = (q0,mkVar "*", Empty, SDrain) in
+  let carta = mk_carta_delta @@ RuleSet.singleton d1 in
+  let res = pre_transitions carta d1 in
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res RuleSet.empty
+
+
+(* post transitions *)
+
+let test_post_transitions () =
+  let open Term.Path in
+  let d1 = (q0,mkSucc @@ mkVar "x", Empty, SStates([q0;q1])) in
+  let delta = RuleSet.of_list
+                [
+                  d1;
+                  (q1,mkSucc @@ mkVar "x", Empty, SStates([q1]));
+                ]
+  in
+  let carta = mk_carta_delta delta in
+  let res = post_transitions carta d1 in
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res delta
+
+let test_post_transitions_drain () =
+  let open Term.Path in
+  let d1 = (q0,mkVar "*", Empty, SDrain) in
+  let carta = mk_carta_delta @@ RuleSet.singleton d1 in
+  let res = post_transitions carta d1 in
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res RuleSet.empty
+
+(* get_conflicting_transitions *)
 
 let test_get_conflicting_transitions_none () =
   let open Term.Path in
@@ -302,6 +348,10 @@ let init_tests () =
    ("accept context-dependant drain 5 ok", test_accept_ctxt_5_ok);
    ("accept context-dependant drain 6 bad", test_accept_ctxt_6_bad);
    ("accept context-dependant drain 7 bad", test_accept_ctxt_7_bad);
+   ("pre_transitions", test_pre_transitions);
+   ("pre_transitions drain", test_pre_transitions_drain);
+   ("post_transitions", test_post_transitions);
+   ("post_transitions drain", test_post_transitions_drain);
    ("get_conflicting_transitions none", test_get_conflicting_transitions_none);
    ("get_conflicting_transitions none smaller", test_get_conflicting_transitions_none_smaller);
    ("get_conflicting_transitions one", test_get_conflicting_transitions_one);
