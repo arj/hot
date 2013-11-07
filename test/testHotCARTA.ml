@@ -237,14 +237,14 @@ let test_pre_transitions () =
   in
   let carta = mk_carta_delta delta in
   let res = pre_transitions carta d1 in
-    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res delta
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of delta res
 
 let test_pre_transitions_drain () =
   let open Term.Path in
   let d1 = (q0,mkVar "*", Empty, SDrain) in
   let carta = mk_carta_delta @@ RuleSet.singleton d1 in
   let res = pre_transitions carta d1 in
-    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res RuleSet.empty
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of RuleSet.empty res
 
 
 (* post transitions *)
@@ -260,14 +260,14 @@ let test_post_transitions () =
   in
   let carta = mk_carta_delta delta in
   let res = post_transitions carta d1 in
-    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res delta
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of delta res
 
 let test_post_transitions_drain () =
   let open Term.Path in
   let d1 = (q0,mkVar "*", Empty, SDrain) in
   let carta = mk_carta_delta @@ RuleSet.singleton d1 in
   let res = post_transitions carta d1 in
-    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of res RuleSet.empty
+    assert_equal ~cmp:RuleSet.equal ~printer:RuleSet.string_of RuleSet.empty res
 
 (* get_conflicting_transitions *)
 
