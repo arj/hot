@@ -304,6 +304,11 @@ module Make = functor (RA : HotRankedAlphabet.S) -> struct
     | _,Bottom -> return []
     | _,_ -> Bad(())
 
+  let string_of_pcontext (t,p) =
+    Printf.sprintf "(%s,%s)"
+      (string_of t)
+      (Path.string_of p)
+
   let rec context_unification (t1,p1) (t2,p2) : ((string * t) list, unit)
                                         BatResult.t =
     let open Path in

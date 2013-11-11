@@ -317,7 +317,7 @@ struct
         | SStates(qs') ->
             RuleSet.union_all @@ BatList.map (get_transitions carta) qs'
 
-  let transition_unification i (_,t1,p1,_) (_,t2,p2,_) : bool =
+  let transition_unification i ((_,t1,p1,_) as d1) ((_,t2,p2,_) as d2) : bool =
     let open Term.Path in
     let open Term.Path.Infix in
     match t1 -. p1 with
@@ -328,27 +328,19 @@ struct
   let get_conflicted_transitions ca =
     let open Term.Path in
     let open Term.Path.Infix in
-    (* Check, which states/transitions are NOT conflict free *)
-    let has_child_conflict (q,t,p,qs) =
-      (* Fetch all child transitions and check if their contexts are unifiable with
-       the current context. *)
-      let check_unification i t' p' =
-        match t -. p with
-          | Term.App(Term.Ctor(c),_) ->
-               BatResult.is_ok @@ Term.context_unification (t,append p (Ele(c,i,Empty))) (t',p')
-          | _ -> failwith "Unexpected behavior, please report." (*BISECT-IGNORE*)
-      in
-      match qs with
-        | SDrain -> false (* Drain states are not conflicted *)
-        | SStates(qs') ->
-            let f i q =
-              let delta_q_i = RuleSet.as_list @@ get_transitions ca q in
-                BatList.map (fun (_,ti,pi,_) -> check_unification i ti pi) delta_q_i
-            in
-            let result = BatList.concat @@ BatList.mapi f qs' in
-              BatList.exists (fun x -> x = false) result
+    let has_conflict ((q,t,p,qs) as d) = match qs with
+      | SDrain -> false (* Cannot have a post conflict. *)
+      | SStates(qs) ->
+          (* d is conflicting, if exists a q \in qs such that forall delta(q) conflict *)
+          let has_post_conflict (i,q_i) =
+            (* Now check exists d =_i d' *)
+            let delta_q_i = get_transitions ca q_i in
+              RuleSet.for_all (not % transition_unification i d) delta_q_i
+          in
+          let i_qs = BatList.mapi (fun i q -> (i,q)) qs in
+            BatList.exists has_post_conflict i_qs
     in
-      RuleSet.filter has_child_conflict ca.rules
+      RuleSet.filter has_conflict ca.rules
 
   let conflict_free (ca : t) : t =
     (* Fetch conflicting transitions *)
