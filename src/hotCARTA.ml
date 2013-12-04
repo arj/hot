@@ -74,7 +74,7 @@ end
 
 (*TODO Abstract to general tree automaton? *)
 
-module Make = functor (Elt : HotInterfaces.ORDEREDPRINTABLE) -> 
+module Make = functor (Elt : HotInterfaces.ORDEREDPRINTABLE) ->
       functor (Type : HotType.S) ->
 struct
 
@@ -162,7 +162,7 @@ struct
       let io = BatIO.output_string () in
         print ~sep:(",")
           (fun out r -> BatIO.nwrite out (string_of_rule r)) io rs;
-          BatIO.close_out io 
+          BatIO.close_out io
   end
 
   type t = {
@@ -348,13 +348,13 @@ struct
       (* Remove them, and all single predecessors *)
       failwith "Not yet implemented"
 
-    (* Transformation *)
+  (* Transformation *)
   module NBA : HotTreeAutomaton.S = struct
 
     module Rules : HotTreeAutomaton.RULES
       with type symbol = RankedAlphabet.elt = struct
         include HotExtBatSet.Make(
-        struct 
+        struct
           type t = string * RankedAlphabet.elt * string list
           let compare = compare
         end)

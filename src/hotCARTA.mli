@@ -107,7 +107,7 @@ module type S = sig
     properties to be disjoint. First argument is the new initial state
     to use for the resulting automaton. *)
   val disjoint_union : state -> t -> t -> t
-  
+
   (** Sets the set of state Q used by the automaton
     to all the states used in the rules and the initial state. *)
   val update_q : t -> t
@@ -148,7 +148,7 @@ end
 
 (** Create an instance of a caRTA using a state representation
   and a ranked alphabet representation. *)
-module Make : functor (Elt : HotInterfaces.ORDEREDPRINTABLE) -> 
+module Make : functor (Elt : HotInterfaces.ORDEREDPRINTABLE) ->
       functor (Type : HotType.S) -> S
          with type RankedAlphabet.elt = Elt.t * Type.t
          and type Term.re = Elt.t * Type.t
