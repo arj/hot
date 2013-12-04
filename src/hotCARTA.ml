@@ -165,6 +165,14 @@ struct
           BatIO.close_out io
   end
 
+  module PContext = struct
+    type t = Term.t * Term.Path.t
+
+    let create t p : t = (t,p)
+
+    let from_rule (_,t,p,_) : t = (t,p)
+  end
+
   type t = {
     s : RankedAlphabet.t;
     qs : States.t;
