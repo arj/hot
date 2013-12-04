@@ -356,6 +356,20 @@ struct
       (* Remove them, and all single predecessors *)
       failwith "Not yet implemented"
 
+  let gen_m carta =
+    (* For all the states, check the possible contexts they occur in. *)
+    let qs = carta.qs in
+    let get_contexts q =
+      let delta = RuleSet.as_list @@ get_transitions carta q in
+        BatList.map PContext.from_rule delta
+    in
+    let f q =
+      let pc = get_contexts q in
+      let new_states = BatList.map (fun q' -> (q,q')) pc in
+        (q,new_states)
+    in
+    BatList.map f @@ States.as_list qs
+
   (* Transformation *)
   module NBA : HotTreeAutomaton.S = struct
 
